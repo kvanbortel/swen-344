@@ -1,6 +1,5 @@
 import unittest
 from src.library import *
-from src.swen344_db_utils import connect
 
 class TestLibrary(unittest.TestCase):
 
