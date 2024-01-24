@@ -16,3 +16,10 @@ class TestLibrary(unittest.TestCase):
         rebuildTables()
         result = exec_get_all('SELECT * FROM example_table')
         self.assertEqual([], result, "no rows in example_table")
+
+    def test_verify_rows(self):
+        """Verify seeded tales have correct num rows"""
+        exec_sql_file("db-kjv7359/src/library.sql")
+        self.assertEqual(countRows("users"), 4)
+        self.assertEqual(countRows("books"), 0)
+        self.assertEqual(countRows("status"), 0)

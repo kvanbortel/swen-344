@@ -16,11 +16,13 @@ INSERT INTO users(id, name, phone, email, items) VALUES
     (3, 'Jackie Gleason', 484-777-7777, 'great1@gmail.com', 1),
     (4, 'Art Garfunkel', 999-999-9999, 'rosemary-thyme@aol.com', DEFAULT);
 
+DROP TYPE IF EXISTS book_type;
+CREATE TYPE book_type AS ENUM ('fiction', 'non-fiction');
 CREATE TABLE books(
     id          SERIAL PRIMARY KEY,
     title       TEXT NOT NULL DEFAULT '',
     author      TEXT NOT NULL DEFAULT '',
-    type        TEXT NOT NULL DEFAULT '',
+    type        book_type NOT NULL,
     pub_date    INTEGER NOT NULL
 );
 
