@@ -3,18 +3,19 @@ DROP TABLE IF EXISTS books;
 DROP TABLE IF EXISTS status;
 
 CREATE TABLE users(
-    id      SERIAL PRIMARY KEY,
-    name    TEXT NOT NULL DEFAULT '',
-    phone   VARCHAR(12) NOT NULL,
-    email   TEXT NOT NULL DEFAULT '',
-    items   INTEGER NOT NULL DEFAULT 0
+    id          SERIAL PRIMARY KEY,
+    name        TEXT NOT NULL DEFAULT '',
+    phone       VARCHAR(12) NOT NULL,
+    email       TEXT NOT NULL DEFAULT '',
+    item_count  INTEGER NOT NULL DEFAULT 0,
+    items       INTEGER[] --Link to book_id
 );
 
-INSERT INTO users(name, phone, email, items) VALUES
-    ('Ada Lovelace', 585-111-1111, 'al@hotmail.com', 2),
-    ('Mary Shelley', 585-222-2222, 'frank@aol.com', 5),
-    ('Jackie Gleason', 484-777-7777, 'great1@gmail.com', 1),
-    ('Art Garfunkel', 999-999-9999, 'rosemary-thyme@aol.com', DEFAULT);
+INSERT INTO users(name, phone, email, item_count, items) VALUES
+    ('Ada Lovelace', 585-111-1111, 'al@hotmail.com', 2, '{1, 6}'),
+    ('Mary Shelley', 585-222-2222, 'frank@aol.com', 5, '{2, 3, 4, 5, 6}'),
+    ('Jackie Gleason', 484-777-7777, 'great1@gmail.com', 1, '{3}'),
+    ('Art Garfunkel', 999-999-9999, 'rosemary-thyme@aol.com', DEFAULT, '{}');
 
 DROP TYPE IF EXISTS book_type;
 CREATE TYPE book_type AS ENUM ('fiction', 'nonfiction');

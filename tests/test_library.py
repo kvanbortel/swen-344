@@ -23,3 +23,9 @@ class TestLibrary(unittest.TestCase):
         self.assertEqual(countRows("users"), 4)
         self.assertEqual(countRows("books"), 6)
         self.assertEqual(countRows("status"), 6)
+
+    def test_list_user_books_empty(self):
+        """Verify seeded table returns correct books list for user"""
+        exec_sql_file("db-kjv7359/src/library.sql")
+        books = listUserBooks("Jackie Gleason") # Do Art Garfunkel
+        self.assertEqual(books, ['The Woman in White'])

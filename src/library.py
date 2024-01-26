@@ -24,3 +24,14 @@ def countRows(table):
     )
     return count
 
+def listUserBooks(username):
+    result = []
+    books, = exec_get_one(
+        "SELECT users.items FROM users WHERE users.name = %s", (username,))
+    if books:
+        for book in books:
+            title, = exec_get_one(
+                "SELECT books.title FROM books INNER JOIN users ON books.id=%s", (book,)
+            )
+            result.append(title)
+    return result
