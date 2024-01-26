@@ -21,5 +21,5 @@ class TestLibrary(unittest.TestCase):
         """Verify seeded tales have correct num rows"""
         exec_sql_file("db-kjv7359/src/library.sql")
         self.assertEqual(countRows("users"), 4)
-        self.assertEqual(countRows("books"), 0)
-        self.assertEqual(countRows("status"), 0)
+        self.assertEqual(countRows("books"), 6)
+        self.assertEqual(countRows("status"), 6)
