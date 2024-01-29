@@ -11,10 +11,10 @@ CREATE TABLE users(
 );
 
 INSERT INTO users(name, phone, email) VALUES
-    ('Ada Lovelace', 585-111-1111, 'al@hotmail.com'),
-    ('Mary Shelley', 585-222-2222, 'frank@aol.com'),
+    ('Ada Lovelace',   585-111-1111, 'al@hotmail.com'),
+    ('Mary Shelley',   585-222-2222, 'frank@aol.com'),
     ('Jackie Gleason', 484-777-7777, 'great1@gmail.com'),
-    ('Art Garfunkel', 999-999-9999, 'rosemary-thyme@aol.com');
+    ('Art Garfunkel',  999-999-9999, 'rosemary-thyme@aol.com');
 
 DROP TYPE IF EXISTS book_type;
 CREATE TYPE book_type AS ENUM ('fiction', 'nonfiction');
@@ -27,12 +27,12 @@ CREATE TABLE books(
 );
 
 INSERT INTO books(title, author, type, pub_date) VALUES
-    ('The Secret History', 'Tartt, Donna', 'fiction', 1992),
-    ('Mort', 'Pratchett, Terry', 'fiction', 1998),
-    ('The Woman in White', 'Wilkie Collins', 'fiction', 1860),
-    ('The Midnight Disease', 'Flaherty, Alice', 'nonfiction', 2004),
-    ('The Making of a Story', 'LaPlante, Alice', 'nonfiction', 2009),
-    ('Dynasty', 'Holland, Tom', 'nonfiction', 2015);
+    ('The Secret History',      'Tartt, Donna',     'fiction',    1992),
+    ('Mort',                    'Pratchett, Terry', 'fiction',    1998),
+    ('The Woman in White',      'Wilkie Collins',   'fiction',    1860),
+    ('The Midnight Disease',    'Flaherty, Alice',  'nonfiction', 2004),
+    ('The Making of a Story',   'LaPlante, Alice',  'nonfiction', 2009),
+    ('Dynasty',                 'Holland, Tom',     'nonfiction', 2015);
 
 CREATE TABLE book_status(
     id          SERIAL PRIMARY KEY,
