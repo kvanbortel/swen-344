@@ -1,10 +1,6 @@
 from src.swen344_db_utils import *
 from psycopg2 import sql
 
-def rebuildTables():
-    """Reinitialize a clean database with sample data"""
-    exec_sql_file("db-kjv7359/src/library.sql")
-
 def countRows(table):
     """Returns the number of rows in the given table"""
     count, = exec_get_one(
@@ -38,9 +34,9 @@ def listAllCheckedOutBooks():
     return books
 
 def listTypeBooks(book_type):
-    """Get the list of books with the given type
+    """Get a counted list of books with the given type
 
-    Returns a list of (book title, book total) pairs."""
+    Returns a list of (book title, quantity) pairs."""
     books = exec_get_all(
         """SELECT books.title, book_availability.count FROM books
             INNER JOIN book_availability ON books.id=book_availability.book_id
