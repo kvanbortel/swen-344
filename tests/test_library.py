@@ -149,7 +149,7 @@ class TestLibrary(unittest.TestCase):
         ])
 
     def test_reserve_book_with_copies(self):
-        """Esure a book cannot be reserved if copies remain"""
+        """Ensure a book cannot be reserved if copies remain"""
         user = 'Jackie Gleason'
         title = 'Mort'
         with self.assertRaises(ValueError):

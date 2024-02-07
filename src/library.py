@@ -395,9 +395,9 @@ def loadDataBooks(path):
         csvreader = csv.reader(csvfile)
         next(csvreader)
         for title, author, summary, type_, sub_type, copies in csvreader:
-            if type_ == 'Fiction':
+            if type_.lower() == 'fiction':
                 type_ = 'fiction'
-            elif type_ == 'Non-Fiction':
+            elif type_.lower() == 'non-fiction' or 'nonfiction':
                 type_ = 'nonfiction'
             cur.execute("""
                 INSERT INTO books(title, author, summary, type, sub_type, copies)
