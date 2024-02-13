@@ -2,6 +2,8 @@ from src.swen344_db_utils import *
 from psycopg2 import sql
 import csv
 
+OVERDUE_MIN_DAYS = 14 # a book is overdue if it has been checked out >= 14 days
+
 def countRows(table):
     """
     Count the rows in the given table
@@ -190,7 +192,7 @@ def isActive(name):
 
 def hasOverdueBook(user, date):
     """
-    Check if a user has an overdue book
+    Check if a user has an overdue book, using the given date as a comparion for duration
 
     Args:
         user: name of the user
@@ -204,8 +206,8 @@ def hasOverdueBook(user, date):
             INNER JOIN users ON users.id = checkout.user_id
         WHERE users.name = %s
         AND checkout.is_returned = FALSE
-        AND (%s - checkout.checkout_date) >= 14
-    """, (user, date)) # a book is overdue when it reaches 14 days checked out
+        AND (%s - checkout.checkout_date) >= %s
+    """, (user, date, OVERDUE_MIN_DAYS))
     return has_overdue_book
 
 
@@ -441,7 +443,7 @@ def searchBook(title):
 
 def getLendingHistory(user):
     """
-    Return the lending history for a certian user
+    Return the lending history for a certain user
 
     Args:
         user: the name of the user
