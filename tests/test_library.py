@@ -14,6 +14,8 @@ class TestLibrary(unittest.TestCase):
         self.assertEqual(countRows("books"), 7)
         self.assertEqual(countRows("checkout"), 10)
         self.assertEqual(countRows("reserve"), 0)
+        self.assertEqual(countRows("libraries"), 5)
+        self.assertEqual(countRows("inventory"), 35)
 
     def test_list_user_books_empty(self):
         """Ensure listUserBooks() returns an empty list for Art"""
@@ -71,12 +73,9 @@ class TestLibrary(unittest.TestCase):
         self.assertEqual(tables, [
             'books',
             'checkout',
-            'fairport',
-            'henrietta',
-            'penfield',
-            'pittsford',
+            'inventory',
+            'libraries',
             'reserve',
-            'test_library',
             'users'
         ])
 
@@ -204,7 +203,7 @@ class TestLibrary(unittest.TestCase):
         full_path = os.path.join(os.path.dirname(__file__), f'../../{path}')
         loadDataBooks(full_path, library)
         self.assertEqual(countRows('books'), 26)
-        self.assertEqual(countRows('test_library'), 26)
+        self.assertEqual(countRows('inventory'), 54)
 
     def test_overdue_books_scenario(self):
         """
@@ -315,4 +314,24 @@ class TestLibrary(unittest.TestCase):
             ('pittsford', 'The Midnight Disease', 2),
             ('pittsford', 'The Secret History', 6),
             ('pittsford', 'The Woman in White', 7),
+            ('test_library', 'Dynasty', 3),
+            ('test_library', 'Frankenstein', 3),
+            ('test_library', 'Mort', 3),
+            ('test_library', 'The Making of a Story', 5),
+            ('test_library', 'The Midnight Disease', 10),
+            ('test_library', 'The Secret History', 4),
+            ('test_library', 'The Woman in White', 8),
         ])
+
+    def test_list_books_one_library(self):
+        """Ensure the books at one library can be listed"""
+        self.assertEqual(listAllBooksLibrary('fairport'), [
+            ('Dynasty', 2),
+            ('Frankenstein', 1),
+            ('Mort', 2),
+            ('The Making of a Story', 3),
+            ('The Midnight Disease', 8),
+            ('The Secret History', 8),
+            ('The Woman in White', 6),
+        ])
+

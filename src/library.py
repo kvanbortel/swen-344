@@ -2,8 +2,6 @@ from src.swen344_db_utils import *
 from psycopg2 import sql
 import csv
 
-LIBRARIES = ('fairport', 'henrietta', 'penfield', 'pittsford')
-
 def countRows(table):
     """
     Count the rows in the given table
@@ -73,14 +71,14 @@ def listTypeBooks(book_type, library):
     Returns:
         a sorted list of (book title, quantity) pairs
     """
-    books = exec_get_all(
-        sql=sql.SQL("""
-            SELECT books.title, {table}.copies FROM books
-                INNER JOIN {table} ON books.id = {table}.book_id
-            WHERE books.type = %s
-            ORDER BY books.title ASC
-        """).format(table=sql.Identifier(library)),
-        args=(book_type,),)
+    books = exec_get_all("""
+        SELECT books.title, inventory.copies FROM books
+            INNER JOIN inventory     ON books.id = inventory.book_id
+            INNER JOIN libraries ON libraries.id = inventory.library_id
+        WHERE books.type = %s
+        AND libraries.name = %s
+        ORDER BY books.title ASC
+    """, (book_type, library))
     return books
 
 
@@ -222,17 +220,17 @@ def getRemainingCopies(title, library):
     Returns:
         the remaining number of copies
     """
-    total, = exec_get_one(
-        sql=sql.SQL("""
-            SELECT {table}.copies FROM {table}
-                INNER JOIN books ON books.id = {table}.book_id
-            WHERE books.title = %s
-        """).format(table=sql.Identifier(library)),
-        args=(title,),)
+    total, = exec_get_one("""
+        SELECT inventory.copies FROM inventory
+            INNER JOIN books     ON books.id = inventory.book_id
+            INNER JOIN libraries ON libraries.id = inventory.library_id
+        WHERE books.title = %s
+    """, (title,))
     checkout_total, = exec_get_one("""
         SELECT COUNT(books.title) FROM books
-            INNER JOIN checkout ON books.id = checkout.book_id
-        WHERE library_name = %s AND books.title = %s AND is_returned = FALSE
+            INNER JOIN checkout  ON books.id = checkout.book_id
+            INNER JOIN libraries ON libraries.id = checkout.library_id
+        WHERE libraries.name = %s AND books.title = %s AND is_returned = FALSE
     """, (library, title))
     return total - checkout_total
 
@@ -251,10 +249,11 @@ def isCheckedOut(user, title, library):
     """
     exists, = exec_get_one("""
         SELECT COUNT(books.title) FROM books
-            INNER JOIN checkout ON books.id = checkout.book_id
-            INNER JOIN users    ON users.id = checkout.user_id
+            INNER JOIN checkout  ON books.id = checkout.book_id
+            INNER JOIN users     ON users.id = checkout.user_id
+            INNER JOIN libraries ON libraries.id = checkout.library_id
         WHERE users.name = %s AND books.title = %s
-            AND checkout.library_name = %s
+            AND libraries.name = %s
     """, (user, title, library))
     return exists
 
@@ -264,10 +263,10 @@ def checkoutBook(user, title, library, date):
     Check out the given book on behalf of the user
 
     Args:
-        user:    the user's name
-        title:   the book's title
-        library: the library the book is from
-        date:    the date the user checked out the book
+        user:     the user's name
+        title:    the book's title
+        library:  the library the book is from
+        date:     the date the user checked out the book
 
     Raises:
         ValueError: there are no copies left to check out
@@ -277,17 +276,20 @@ def checkoutBook(user, title, library, date):
     if hasOverdueBook(user, date) == 1:
         raise ValueError('User has an overdue book.')
     exec_commit("""
-        INSERT INTO checkout(user_id, book_id, library_name)
+        INSERT INTO checkout(user_id, book_id, library_id)
         SELECT
             (SELECT users.id FROM users
             WHERE users.name = %s),
             (SELECT books.id FROM books
             WHERE books.title = %s),
-            %s
+            (SELECT libraries.id FROM libraries
+            WHERE libraries.name = %s)
     """, (user, title, library))
     exec_commit("""
         UPDATE checkout SET checkout_date = %s
-        WHERE library_name = %s
+        WHERE library_id =
+            (SELECT libraries.id FROM libraries
+            WHERE libraries.name = %s)
         AND user_id =
             (SELECT users.id FROM users
             WHERE users.name = %s)
@@ -310,7 +312,9 @@ def returnBook(user, title, library, date):
     exec_commit("""
         UPDATE checkout
             SET is_returned = TRUE, return_date = %s
-        WHERE library_name = %s
+        WHERE library_id = 
+            (SELECT libraries.id FROM libraries
+            WHERE libraries.name = %s)
         AND user_id =
             (SELECT users.id FROM users
             WHERE users.name = %s)
@@ -335,7 +339,9 @@ def daysCheckedOut(user, title, library):
     date_diff, = exec_get_one("""
         SELECT checkout.return_date - checkout.checkout_date AS date_diff
         FROM checkout
-        WHERE library_name = %s
+        WHERE library_id =
+            (SELECT libraries.id FROM libraries
+            WHERE libraries.name = %s)
         AND user_id =
             (SELECT users.id FROM users
             WHERE users.name = %s)
@@ -355,12 +361,13 @@ def listCheckoutLog():
         return date, remaining copies)
     """
     books = exec_get_all("""
-        SELECT books.type, books.author, books.title, users.name, checkout.library_name,
+        SELECT books.type, books.author, books.title, users.name, libraries.name,
         TO_CHAR(checkout.checkout_date, 'YYYY-MM-DD'),
         TO_CHAR(checkout.return_date, 'YYYY-MM-DD')
         FROM books
-            INNER JOIN checkout ON books.id = checkout.book_id
-            INNER JOIN users    ON users.id = checkout.user_id
+            INNER JOIN checkout  ON books.id = checkout.book_id
+            INNER JOIN users     ON users.id = checkout.user_id
+            INNER JOIN libraries ON libraries.id = checkout.library_id
         ORDER BY books.type ASC, books.author ASC, users.name ASC
     """)
     return [(ty, a, ti, us, li, *x, getRemainingCopies(ti, li)) for ty, a, ti, us, li, *x in books]
@@ -380,7 +387,10 @@ def isReserved(title, library):
     exists, = exec_get_one("""
         SELECT COUNT(books.title) FROM reserve
             INNER JOIN books ON books.id = reserve.book_id
-        WHERE reserve.library_name = %s AND books.title = %s
+        WHERE reserve.library_id =
+            (SELECT libraries.id FROM libraries
+            WHERE libraries.name = %s)
+        AND books.title = %s
     """, (library, title))
     return exists
 
@@ -401,13 +411,14 @@ def reserveBook(user, title, library):
         raise ValueError('Copies of this book still remain.')
 
     exec_commit("""
-        INSERT INTO reserve (user_id, book_id, library_name)
+        INSERT INTO reserve (user_id, book_id, library_id)
         SELECT
             (SELECT users.id FROM users
             WHERE users.name = %s),
             (SELECT books.id FROM books
             WHERE books.title = %s),
-            (%s)
+            (SELECT libraries.id FROM libraries
+            WHERE libraries.name = %s)
     """, (user, title, library))
 
 
@@ -440,14 +451,15 @@ def getLendingHistory(user):
         return date, remaining copies)
     """
     books = exec_get_all("""
-        SELECT books.type, books.author, books.title, checkout.library_name,
+        SELECT books.type, books.author, books.title, libraries.name,
         TO_CHAR(checkout.checkout_date, 'YYYY-MM-DD'),
         TO_CHAR(checkout.return_date, 'YYYY-MM-DD')
         FROM books
-            INNER JOIN checkout ON books.id = checkout.book_id
-            INNER JOIN users    ON users.id = checkout.user_id
+            INNER JOIN checkout  ON books.id = checkout.book_id
+            INNER JOIN users     ON users.id = checkout.user_id
+            INNER JOIN libraries ON libraries.id = checkout.library_id
         WHERE users.name = %s
-        ORDER BY books.type ASC, books.author ASC, checkout.library_name ASC
+        ORDER BY books.type ASC, books.author ASC, libraries.name ASC
     """, (user,))
     return [(ty, a, ti, li, *x, getRemainingCopies(ti, li)) for ty, a, ti, li, *x in books]
 
@@ -468,17 +480,21 @@ def loadDataBooks(path, library):
                 type_ = 'fiction'
             elif type_.lower() == 'non-fiction' or 'nonfiction':
                 type_ = 'nonfiction'
-            cur.execute(
-                query=sql.SQL("""
-                    WITH inserted_id AS (
-                        INSERT INTO books (title, author, summary, type, sub_type)
-                        VALUES (%s, %s, %s, %s, %s)
-                        RETURNING id
+            cur.execute("""
+                WITH inserted_id AS (
+                    INSERT INTO books (title, author, summary, type, sub_type)
+                    VALUES (%s, %s, %s, %s, %s)
+                    RETURNING id
+                )
+                INSERT INTO inventory (library_id, book_id, copies)
+                VALUES
+                    (
+                    (SELECT libraries.id FROM libraries
+                        WHERE libraries.name = %s),
+                    (SELECT id FROM inserted_id),
+                    %s
                     )
-                    INSERT INTO {table} (book_id, copies)
-                    VALUES ((SELECT id FROM inserted_id), %s)
-                """).format(table=sql.Identifier(library)),
-                vars=(title, author, summary, type_, sub_type, copies),)
+            """, (title, author, summary, type_, sub_type, library, copies))
         conn.commit()
 
 
@@ -490,12 +506,16 @@ def addNewBookToLibrary(title, library):
         title:   the title of the book to add
         library: the name of the library to add the book to
     """
-    exec_commit(
-        sql=sql.SQL("""
-            INSERT INTO {table} (book_id)
-            VALUES ((SELECT books.id FROM books WHERE books.title = %s))
-        """).format(table=sql.Identifier(library)),
-        args=(title,),)
+    exec_commit("""
+        INSERT INTO inventory (library_id, book_id)
+        VALUES
+            (
+            (SELECT libraries.id FROM libraries
+                WHERE libraries.name = %s),
+            (SELECT books.id FROM books
+                WHERE books.title = %s)
+            )
+    """, (library, title))
 
 
 def bookInLibrary(title, library):
@@ -509,13 +529,13 @@ def bookInLibrary(title, library):
     Returns:
         True if the book is in the library, False otherwise
     """
-    in_library, = exec_get_one(
-        sql=sql.SQL("""
-            SELECT COUNT({table}.book_id) FROM {table}
-                INNER JOIN books ON books.id = {table}.book_id
-            WHERE books.title = %s
-        """).format(table=sql.Identifier(library)),
-        args=(title,),)
+    in_library, = exec_get_one("""
+        SELECT COUNT(inventory.book_id) FROM inventory
+            INNER JOIN books     ON books.id = inventory.book_id
+            INNER JOIN libraries ON libraries.id = inventory.library_id
+        WHERE books.title = %s
+        AND libraries.name = %s
+    """, (title, library))
     return in_library
 
 
@@ -526,11 +546,11 @@ def addCopiesToLibrary(title, author, book_type, library, copies):
     Add the number of new copies to the library's stock.
 
     Args:
-        title: the name of the book
-        author: the name of the author
+        title:     the name of the book
+        author:    the name of the author
         book_type: the type of book (fiction or nonfiction)
-        library: the name of the library to add copies to
-        copies: the number of copies to add to the library
+        library:   the name of the library to add copies to
+        copies:    the number of copies to add to the library
     """
     if searchBook(title) == 0:
         addBook(title, author, book_type)
@@ -538,15 +558,16 @@ def addCopiesToLibrary(title, author, book_type, library, copies):
     if bookInLibrary(title, library) == 0:
         addNewBookToLibrary(title, library)
 
-    exec_commit(
-        sql=sql.SQL("""
-            UPDATE {table} SET copies = (copies + %s)
-            WHERE book_id =
-                (SELECT books.id FROM books
-                WHERE books.title = %s)
-        """).format(table=sql.Identifier(library)),
-        args=(copies, title),)
-    
+    exec_commit("""
+        UPDATE inventory SET copies = (copies + %s)
+        WHERE book_id =
+            (SELECT books.id FROM books
+            WHERE books.title = %s)
+        AND library_id =
+            (SELECT libraries.id FROM libraries
+            WHERE libraries.name = %s)
+    """, (copies, title, library))
+ 
 
 def addBook(title, author, book_type):
     """
@@ -575,13 +596,15 @@ def getCopiesFromLibrary(title, library):
     Returns:
         The number of copies of the book
     """
-    copies, = exec_get_one(
-        sql=sql.SQL("""
-            SELECT copies FROM {table}
-            WHERE book_id =
-                (SELECT books.id FROM books WHERE books.title = %s)
-        """).format(table=sql.Identifier(library)),
-        args=(title,),)
+    copies, = exec_get_one("""
+        SELECT copies FROM inventory
+        WHERE book_id =
+            (SELECT books.id FROM books
+            WHERE books.title = %s)
+        AND library_id =
+            (SELECT libraries.id FROM libraries
+            WHERE libraries.name = %s)
+    """, (title, library))
     return copies
 
 
@@ -617,13 +640,14 @@ def listAllBooksLibrary(library):
     Returns:
         A list of tuples of (book title, copies)
     """
-    books = exec_get_all(
-        sql=sql.SQL("""
-            SELECT books.title, {table}.copies FROM books
-                INNER JOIN {table} ON books.id = {table}.book_id
-            ORDER BY books.title
-        """).format(table=sql.Identifier(library))
-    )
+    books = exec_get_all("""
+        SELECT books.title, inventory.copies FROM books
+            INNER JOIN inventory ON books.id = inventory.book_id
+        WHERE library_id =
+            (SELECT libraries.id FROM libraries
+            WHERE libraries.name = %s)
+        ORDER BY books.title
+    """, (library,))
     return books
 
 
@@ -634,10 +658,10 @@ def listAllBooks():
     Returns:
         A list of tuples of (library name, title, copies)
     """
-    full_list = []
-    for library in LIBRARIES:
-        books = listAllBooksLibrary(library)
-        lib_books = [(library, *x) for x in books]
-        full_list.extend(lib_books)
-
-    return full_list
+    books = exec_get_all("""
+        SELECT libraries.name, books.title, inventory.copies FROM inventory
+            INNER JOIN libraries ON libraries.id = inventory.library_id
+            INNER JOIN books     ON books.id = inventory.book_id
+        ORDER BY libraries.name ASC, books.title ASC
+    """)
+    return books

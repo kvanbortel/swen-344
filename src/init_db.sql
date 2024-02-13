@@ -2,10 +2,8 @@ DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS books;
 DROP TABLE IF EXISTS checkout;
 DROP TABLE IF EXISTS reserve;
-DROP TABLE IF EXISTS penfield;
-DROP TABLE IF EXISTS fairport;
-DROP TABLE IF EXISTS henrietta;
-DROP TABLE IF EXISTS pittsford;
+DROP TABLE IF EXISTS libraries;
+DROP TABLE IF EXISTS inventory;
 
 CREATE TABLE users(
     id          SERIAL PRIMARY KEY,
@@ -27,11 +25,9 @@ CREATE TABLE books(
     pub_date    INTEGER
 );
 
-DROP TYPE IF EXISTS library_type;
-CREATE TYPE library_type AS ENUM ('penfield', 'fairport', 'henrietta', 'pittsford');
 CREATE TABLE checkout(
     id              SERIAL PRIMARY KEY,
-    library_name    library_type,
+    library_id      INTEGER NOT NULL,
     is_returned     BOOLEAN DEFAULT FALSE,
     user_id         INTEGER NOT NULL,
     book_id         INTEGER NOT NULL,
@@ -41,31 +37,19 @@ CREATE TABLE checkout(
 
 CREATE TABLE reserve(
     id              SERIAL PRIMARY KEY,
-    library_name    library_type,
+    library_id      INTEGER NOT NULL,
     user_id         INTEGER NOT NULL,
     book_id         INTEGER NOT NULL
 );
 
-CREATE TABLE penfield(
+CREATE TABLE libraries(
     id          SERIAL PRIMARY KEY,
-    book_id     INTEGER NOT NULL,
-    copies      INTEGER NOT NULL DEFAULT 0
+    name        TEXT NOT NULL
 );
 
-CREATE TABLE fairport(
+CREATE TABLE inventory(
     id          SERIAL PRIMARY KEY,
-    book_id     INTEGER NOT NULL,
-    copies      INTEGER NOT NULL DEFAULT 0
-);
-
-CREATE TABLE henrietta(
-    id          SERIAL PRIMARY KEY,
-    book_id     INTEGER NOT NULL,
-    copies      INTEGER NOT NULL DEFAULT 0
-);
-
-CREATE TABLE pittsford(
-    id          SERIAL PRIMARY KEY,
+    library_id  INTEGER NOT NULL,
     book_id     INTEGER NOT NULL,
     copies      INTEGER NOT NULL DEFAULT 0
 );
