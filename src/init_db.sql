@@ -2,6 +2,8 @@ DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS books;
 DROP TABLE IF EXISTS checkout;
 DROP TABLE IF EXISTS reserve;
+DROP TABLE IF EXISTS libraries;
+DROP TABLE IF EXISTS inventory;
 
 CREATE TABLE users(
     id          SERIAL PRIMARY KEY,
@@ -20,12 +22,12 @@ CREATE TABLE books(
     summary     TEXT NOT NULL DEFAULT '',
     type        book_type,
     sub_type    TEXT NOT NULL DEFAULT '',
-    pub_date    INTEGER,
-    copies      INTEGER NOT NULL DEFAULT 0
+    pub_date    INTEGER
 );
 
 CREATE TABLE checkout(
     id              SERIAL PRIMARY KEY,
+    library_id      INTEGER NOT NULL,
     is_returned     BOOLEAN DEFAULT FALSE,
     user_id         INTEGER NOT NULL,
     book_id         INTEGER NOT NULL,
@@ -34,7 +36,20 @@ CREATE TABLE checkout(
 );
 
 CREATE TABLE reserve(
+    id              SERIAL PRIMARY KEY,
+    library_id      INTEGER NOT NULL,
+    user_id         INTEGER NOT NULL,
+    book_id         INTEGER NOT NULL
+);
+
+CREATE TABLE libraries(
     id          SERIAL PRIMARY KEY,
-    user_id     INTEGER NOT NULL,
-    book_id     INTEGER NOT NULL
+    name        TEXT NOT NULL
+);
+
+CREATE TABLE inventory(
+    id          SERIAL PRIMARY KEY,
+    library_id  INTEGER NOT NULL,
+    book_id     INTEGER NOT NULL,
+    copies      INTEGER NOT NULL DEFAULT 0
 );
