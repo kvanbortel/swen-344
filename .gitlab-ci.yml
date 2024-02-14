@@ -1,8 +1,9 @@
 image:
-  name: kalrabb/swen344-pg-py-base:latest
+  name: kalrabb/docker_python_sql_test-db:latest
+#  name: kalrabb/swen344-pg-py-base:latest
 
-services:
-  - postgres:14
+#services:
+#  - postgres:14
 
 variables:
   POSTGRES_DB: swen344
@@ -17,6 +18,8 @@ before_script:
 testrunner:
   script:
     - echo "hello class"
-    - $PYTHON_RUN --version
+    - $PYTHON_RUN --version  
+    - /setup/pg-start.sh
+    - sleep 10
     - $PYTHON_RUN -m unittest -v
   stage: test
