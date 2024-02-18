@@ -32,7 +32,8 @@ CREATE TABLE checkout(
     user_id         INTEGER NOT NULL,
     book_id         INTEGER NOT NULL,
     checkout_date   DATE NOT NULL DEFAULT CURRENT_DATE,
-    return_date     DATE
+    return_date     DATE,
+    late_fee        INTEGER DEFAULT 0
 );
 
 CREATE TABLE reserve(

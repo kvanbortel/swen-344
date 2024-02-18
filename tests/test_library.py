@@ -241,7 +241,8 @@ class TestLibrary(unittest.TestCase):
         with self.assertRaises(ValueError):
             # this should raise an error
             checkoutBook(user2, 'Mort', library2, '2024-01-28')
-        returnBook(user2, title, library2, return_date2)
+        days_late, fee = returnBook(user2, title, library2, return_date2)
+        print(f'You returned your book {days_late} days late. You have a late fee of ${fee:.2f}')
 
         user3 = 'Jackie Gleason'
         checkout_date3 = '2024-03-01'
@@ -251,7 +252,8 @@ class TestLibrary(unittest.TestCase):
         returnBook(user3, 'The Woman in White', 'test_library', '2024-01-01')
         returnBook(user3, 'Dynasty', 'test_library', '2024-01-01')
         checkoutBook(user3, title, library2, checkout_date3)
-        returnBook(user3, title, library2, return_date3)
+        days_late, fee = returnBook(user3, title, library2, return_date3)
+        print(f'You returned your book {days_late} days late. You have a late fee of ${fee:.2f}')
         
         self.assertEqual(listOverdueHistory(), [
             ('Ada Lovelace', 'The Winds of Winter', '2024-01-13', '2024-01-31', 18),

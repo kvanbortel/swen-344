@@ -2,7 +2,10 @@ from src.swen344_db_utils import *
 from psycopg2 import sql
 import csv
 
-OVERDUE_MIN_DAYS = 14 # a book is overdue if it has been checked out >= 14 days
+OVERDUE_MIN_DAYS = 14   # a book is overdue if it has been checked out >= 14 days
+SMALL_FEE = 0.25        # the smaller fee for an overdue book is $0.25 per day
+LARGE_FEE = 2.00        # the larger fee for an overdue book is $2.00 per day
+SMALL_FEE_DURATION = 7  # user is charged the small fee for the first 7 days
 
 def countRows(table):
     """
@@ -303,13 +306,17 @@ def checkoutBook(user, title, library, date):
 
 def returnBook(user, title, library, date):
     """
-    Return a book and keep the history
+    Return a book and keep the history. Add late fee if necessary.
 
     Args:
         user:    the user's name
         title:   the book's title
         library: the library the book is from
         date:    the date the user returned the book
+
+    Returns:
+            days_late: the number of days the book was returned late
+            fee:       the fee based on the number of days the book was returned late
     """
     exec_commit("""
         UPDATE checkout
@@ -324,6 +331,32 @@ def returnBook(user, title, library, date):
             (SELECT books.id FROM books
             WHERE books.title = %s)
     """, (date, library, user, title))
+
+    fee = 0
+    days_late = daysCheckedOut(user, title, library) - OVERDUE_MIN_DAYS
+
+    if (days_late > 0 and days_late <= SMALL_FEE_DURATION):
+        fee += days_late * SMALL_FEE
+
+    elif (days_late > 0 and days_late > SMALL_FEE_DURATION):
+        fee += SMALL_FEE_DURATION * SMALL_FEE
+        fee += (days_late - SMALL_FEE_DURATION) * LARGE_FEE
+
+    exec_commit("""
+        UPDATE checkout
+            SET late_fee = %s
+        WHERE library_id = 
+            (SELECT libraries.id FROM libraries
+            WHERE libraries.name = %s)
+        AND user_id =
+            (SELECT users.id FROM users
+            WHERE users.name = %s)
+        AND book_id =
+            (SELECT books.id FROM books
+            WHERE books.title = %s)
+    """, (fee, library, user, title))
+
+    return days_late, fee
 
 
 def daysCheckedOut(user, title, library):
