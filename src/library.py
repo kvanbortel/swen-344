@@ -700,3 +700,39 @@ def listAllBooks():
         ORDER BY libraries.name ASC, books.title ASC
     """)
     return books
+
+
+def getCheckoutTable():
+    """
+    Lists the all checked out books and users
+
+    Returns:
+        A list of tuples of (book name, users who checked out book)
+
+    """
+    checkout = exec_get_all("""
+        SELECT title || ' by ' || author AS book,
+               STRING_AGG(name, ', ') AS user
+            FROM checkout
+            INNER JOIN books ON books.id = checkout.book_id
+            INNER JOIN users ON users.id = checkout.user_id
+        GROUP BY book
+    """) 
+    return checkout
+
+
+def getFullUserInfo():
+    """
+    """
+    info = exec_get_all("""
+        SELECT users.name, books.title,
+            (checkout.checkout_date + %s) AS due_date,
+            TO_CHAR(checkout.return_date, 'YYYY-MM-DD'),
+            checkout.late_fee
+        FROM checkout
+            INNER JOIN libraries ON libraries.id = checkout.library_id
+            INNER JOIN books     ON books.id = checkout.book_id
+            INNER JOIN users     ON users.id = checkout.user_id
+        ORDER BY libraries.name, users.name, books.title, due_date
+    """, (OVERDUE_MIN_DAYS,))
+    return info

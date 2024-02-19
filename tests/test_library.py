@@ -1,5 +1,7 @@
 import unittest
 from src.library import *
+from psycopg2 import sql
+from tabulate import tabulate
 
 class TestLibrary(unittest.TestCase):
 
@@ -336,4 +338,16 @@ class TestLibrary(unittest.TestCase):
             ('The Secret History', 8),
             ('The Woman in White', 6),
         ])
+
+    def test_getCheckoutTable(self):
+        """Ensure checkout table has proper formatting and all information"""
+        result = getCheckoutTable()
+        print()
+        print(tabulate(result, headers=["Book", "Names"]))
+
+    def test_getFullUserInfo(self):
+        """Ensure full user info table returns all info"""
+        result = getFullUserInfo()
+        print()
+        print(tabulate(result, headers=["User", "Book", "Due Date", "Return Date", "Fee"]))
 
