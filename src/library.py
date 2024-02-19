@@ -707,7 +707,7 @@ def getCheckoutTable():
     Lists the all checked out books and users
 
     Returns:
-        A list of tuples of (book name, users who checked out book)
+        A list of tuples of (book and author, users who checked out book)
 
     """
     checkout = exec_get_all("""
@@ -723,6 +723,10 @@ def getCheckoutTable():
 
 def getFullUserInfo():
     """
+    Lists checkout info for all users by library, name, title, and due date
+
+    Returns:
+        A list of tuples of (user name, book title, due date, return date, late fee)
     """
     info = exec_get_all("""
         SELECT users.name, books.title,
@@ -736,3 +740,53 @@ def getFullUserInfo():
         ORDER BY libraries.name, users.name, books.title, due_date
     """, (OVERDUE_MIN_DAYS,))
     return info
+
+
+def getFeeSummary():
+    """
+    Lists checkout summary including fees for all users
+
+    Returns:
+        A list of tuples of (book and author, user name, checkout date, return date, late fee)
+    """
+    info = exec_get_all("""
+        SELECT title || ' by ' || author as book,
+            users.name,
+            TO_CHAR(checkout.checkout_date, 'YYYY-MM-DD'),
+            TO_CHAR(checkout.return_date, 'YYYY-MM-DD'),
+            checkout.late_fee
+        FROM checkout
+            INNER JOIN libraries ON libraries.id = checkout.library_id
+            INNER JOIN books     ON books.id = checkout.book_id
+            INNER JOIN users     ON users.id = checkout.user_id
+        ORDER BY libraries.name, users.name, books.title, checkout.checkout_date
+    """)
+    return info
+
+
+def getCheckoutData():
+    """
+    Lists all checkout data and gives the average borrowed days
+
+    Returns:
+        info:             A list of tuples of (book, user name, checkout date, return date, days borrowed)
+        average_borrowed: Average number of days books have been borrowed for; 0 if average is None
+
+    """
+    info = exec_get_all("""
+        SELECT books.title, users.name, checkout.checkout_date, checkout.return_date,
+            (checkout.return_date - checkout.checkout_date) AS days_borrowed
+        FROM checkout
+            INNER JOIN libraries ON libraries.id = checkout.library_id
+            INNER JOIN books     ON books.id = checkout.book_id
+            INNER JOIN users     ON users.id = checkout.user_id
+        ORDER BY libraries.name, users.name, books.title, checkout.checkout_date 
+    """)
+    average_borrowed, = exec_get_one("""
+        SELECT AVG(checkout.return_date - checkout.checkout_date)
+        FROM checkout
+    """)
+    if (average_borrowed is None):
+        average_borrowed = 0
+
+    return info, average_borrowed

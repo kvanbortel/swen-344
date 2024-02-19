@@ -210,7 +210,8 @@ class TestLibrary(unittest.TestCase):
     def test_overdue_books_scenario(self):
         """
         Ensure the same book can be added to different libraries, users can't check it out if they have an overdue
-        book, and the librarian can list overdue history for all users
+        book, and the librarian can list overdue history for all users.
+        Also check output of getCheckoutData() and getFeeSummary(). 
         """
         title = 'The Winds of Winter'
         author = 'George R.R. Martin'
@@ -261,6 +262,15 @@ class TestLibrary(unittest.TestCase):
             ('Ada Lovelace', 'The Winds of Winter', '2024-01-13', '2024-01-31', 18),
             ('Jackie Gleason', 'The Winds of Winter', '2024-03-01', '2024-03-31', 30),
         ])
+
+        result, average_borrowed = getCheckoutData()
+        print()
+        print(tabulate(result, headers=["Book", "Name", "Checkout Date", "Return Date", "Days Borrowed"]))
+        print("Average return time = {:.2f} days".format(average_borrowed))
+
+        result = getFeeSummary()
+        print()
+        print(tabulate(result, headers=["Book", "Name", "Checkout Date", "Return Date", "Fee"]))
 
     def test_add_additional_copies(self):
         """Ensure additional copies of a book can be added to a library"""
@@ -349,5 +359,17 @@ class TestLibrary(unittest.TestCase):
         """Ensure full user info table returns all info"""
         result = getFullUserInfo()
         print()
-        print(tabulate(result, headers=["User", "Book", "Due Date", "Return Date", "Fee"]))
+        print(tabulate(result, headers=["Name", "Book", "Due Date", "Return Date", "Fee"]))
 
+    def test_getFeeSummary(self):
+        """Ensure all info in fee summary is present"""
+        result = getFeeSummary()
+        print()
+        print(tabulate(result, headers=["Book", "Name", "Checkout Date", "Return Date", "Fee"]))
+
+    def test_getCheckoutData(self):
+        """Ensure all checkout data is returned with average return time"""
+        result, average_borrowed = getCheckoutData()
+        print()
+        print(tabulate(result, headers=["Book", "Name", "Checkout Date", "Return Date", "Days Borrowed"]))
+        print("Average return time = {:.2f} days".format(average_borrowed))
