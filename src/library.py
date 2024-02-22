@@ -704,7 +704,7 @@ def listAllBooks():
 
 def getCheckoutTable():
     """
-    Lists the all checked out books and users
+    Lists all checked out books and users
 
     Returns:
         A list of tuples of (book and author, users who checked out book)
