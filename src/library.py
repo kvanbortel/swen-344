@@ -2,7 +2,10 @@ from src.swen344_db_utils import *
 from psycopg2 import sql
 import csv
 
-OVERDUE_MIN_DAYS = 14 # a book is overdue if it has been checked out >= 14 days
+OVERDUE_MIN_DAYS = 14   # a book is overdue if it has been checked out >= 14 days
+SMALL_FEE = 0.25        # the smaller fee for an overdue book is $0.25 per day
+LARGE_FEE = 2.00        # the larger fee for an overdue book is $2.00 per day
+SMALL_FEE_DURATION = 7  # user is charged the small fee for the first 7 days
 
 def countRows(table):
     """
@@ -303,13 +306,17 @@ def checkoutBook(user, title, library, date):
 
 def returnBook(user, title, library, date):
     """
-    Return a book and keep the history
+    Return a book and keep the history. Add late fee if necessary.
 
     Args:
         user:    the user's name
         title:   the book's title
         library: the library the book is from
         date:    the date the user returned the book
+
+    Returns:
+            days_late: the number of days the book was returned late
+            fee:       the fee based on the number of days the book was returned late
     """
     exec_commit("""
         UPDATE checkout
@@ -324,6 +331,32 @@ def returnBook(user, title, library, date):
             (SELECT books.id FROM books
             WHERE books.title = %s)
     """, (date, library, user, title))
+
+    fee = 0
+    days_late = daysCheckedOut(user, title, library) - OVERDUE_MIN_DAYS
+
+    if (days_late > 0 and days_late <= SMALL_FEE_DURATION):
+        fee += days_late * SMALL_FEE
+
+    elif (days_late > 0 and days_late > SMALL_FEE_DURATION):
+        fee += SMALL_FEE_DURATION * SMALL_FEE
+        fee += (days_late - SMALL_FEE_DURATION) * LARGE_FEE
+
+    exec_commit("""
+        UPDATE checkout
+            SET late_fee = %s
+        WHERE library_id = 
+            (SELECT libraries.id FROM libraries
+            WHERE libraries.name = %s)
+        AND user_id =
+            (SELECT users.id FROM users
+            WHERE users.name = %s)
+        AND book_id =
+            (SELECT books.id FROM books
+            WHERE books.title = %s)
+    """, (fee, library, user, title))
+
+    return days_late, fee
 
 
 def daysCheckedOut(user, title, library):
@@ -667,3 +700,93 @@ def listAllBooks():
         ORDER BY libraries.name ASC, books.title ASC
     """)
     return books
+
+
+def getCheckoutTable():
+    """
+    Lists all checked out books and users
+
+    Returns:
+        A list of tuples of (book and author, users who checked out book)
+
+    """
+    checkout = exec_get_all("""
+        SELECT title || ' by ' || author AS book,
+               STRING_AGG(name, ', ') AS user
+            FROM checkout
+            INNER JOIN books ON books.id = checkout.book_id
+            INNER JOIN users ON users.id = checkout.user_id
+        GROUP BY book
+    """) 
+    return checkout
+
+
+def getFullUserInfo():
+    """
+    Lists checkout info for all users by library, name, title, and due date
+
+    Returns:
+        A list of tuples of (user name, book title, due date, return date, late fee)
+    """
+    info = exec_get_all("""
+        SELECT users.name, books.title,
+            (checkout.checkout_date + %s) AS due_date,
+            TO_CHAR(checkout.return_date, 'YYYY-MM-DD'),
+            checkout.late_fee
+        FROM checkout
+            INNER JOIN libraries ON libraries.id = checkout.library_id
+            INNER JOIN books     ON books.id = checkout.book_id
+            INNER JOIN users     ON users.id = checkout.user_id
+        ORDER BY libraries.name, users.name, books.title, due_date
+    """, (OVERDUE_MIN_DAYS,))
+    return info
+
+
+def getFeeSummary():
+    """
+    Lists checkout summary including fees for all users
+
+    Returns:
+        A list of tuples of (book and author, user name, checkout date, return date, late fee)
+    """
+    info = exec_get_all("""
+        SELECT title || ' by ' || author as book,
+            users.name,
+            TO_CHAR(checkout.checkout_date, 'YYYY-MM-DD'),
+            TO_CHAR(checkout.return_date, 'YYYY-MM-DD'),
+            checkout.late_fee
+        FROM checkout
+            INNER JOIN libraries ON libraries.id = checkout.library_id
+            INNER JOIN books     ON books.id = checkout.book_id
+            INNER JOIN users     ON users.id = checkout.user_id
+        ORDER BY libraries.name, users.name, books.title, checkout.checkout_date
+    """)
+    return info
+
+
+def getCheckoutData():
+    """
+    Lists all checkout data and gives the average borrowed days
+
+    Returns:
+        info:             A list of tuples of (book, user name, checkout date, return date, days borrowed)
+        average_borrowed: Average number of days books have been borrowed for; 0 if average is None
+
+    """
+    info = exec_get_all("""
+        SELECT books.title, users.name, checkout.checkout_date, checkout.return_date,
+            (checkout.return_date - checkout.checkout_date) AS days_borrowed
+        FROM checkout
+            INNER JOIN libraries ON libraries.id = checkout.library_id
+            INNER JOIN books     ON books.id = checkout.book_id
+            INNER JOIN users     ON users.id = checkout.user_id
+        ORDER BY libraries.name, users.name, books.title, checkout.checkout_date 
+    """)
+    average_borrowed, = exec_get_one("""
+        SELECT AVG(checkout.return_date - checkout.checkout_date)
+        FROM checkout
+    """)
+    if (average_borrowed is None):
+        average_borrowed = 0
+
+    return info, average_borrowed
