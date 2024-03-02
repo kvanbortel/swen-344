@@ -13,3 +13,13 @@ class TestExample(unittest.TestCase):
         expected = { '1' : 'hello, world!' }
         actual = get_rest_call(self, 'http://localhost:5000')
         self.assertEqual(expected, actual)
+
+    def test_list_users(self):
+        """Ensure all users are listed"""
+        result = get_rest_call(self, 'http://localhost:5000/users')
+        self.assertEqual(4, len(result))
+
+    def test_list_all_books(self):
+        """Ensure all books are listed"""
+        result = get_rest_call(self, 'http://localhost:5000/books')
+        self.assertEqual(35, len(result))
