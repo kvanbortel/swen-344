@@ -52,7 +52,7 @@ CREATE TABLE reserve(
 
 CREATE TABLE libraries(
     id          SERIAL PRIMARY KEY,
-    name        TEXT NOT NULL
+    location    TEXT NOT NULL
 );
 
 CREATE TABLE inventory(

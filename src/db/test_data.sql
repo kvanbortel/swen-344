@@ -32,7 +32,7 @@ INSERT INTO checkout(user_id, book_id, library_id, checkout_date) VALUES
     (3, 3, 1, '2024-01-01'),
     (3, 6, 1, '2024-01-01');
 
-INSERT INTO libraries(name) VALUES
+INSERT INTO libraries(location) VALUES
     ('test_library'),
     ('penfield'),
     ('fairport'),
