@@ -1,10 +1,3 @@
-DROP TABLE IF EXISTS example_table;
-
-CREATE TABLE example_table(
-  id SERIAL PRIMARY KEY,
-  foo TEXT NOT NULL
-);
-
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS books;
 DROP TABLE IF EXISTS checkout;

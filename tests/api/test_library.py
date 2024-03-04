@@ -9,11 +9,6 @@ class TestExample(unittest.TestCase):
         post_rest_call(self, 'http://localhost:5000/manage/init')
         print("DB Should be reset now")
 
-    def test_hello_world(self):
-        expected = { '1' : 'hello, world!' }
-        actual = get_rest_call(self, 'http://localhost:5000')
-        self.assertEqual(expected, actual)
-
     def test_get_users(self):
         """Ensure all users are listed"""
         result = get_rest_call(self, 'http://localhost:5000/users')
