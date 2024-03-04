@@ -1,6 +1,6 @@
 from flask_restful import Resource
-from db import example
+from db import library
 
 class Users(Resource):
     def get(self):
-        return example.getUsers()
+        return library.getUsers()

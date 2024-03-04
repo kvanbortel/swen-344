@@ -2,7 +2,7 @@ from flask_restful import Resource, reqparse, request  #NOTE: Import from flask_
 
 from db.swen344_db_utils import *
 
-from db.example import rebuild_tables
+from db.library import rebuild_tables
 
 class Init(Resource):
     def post(self):
