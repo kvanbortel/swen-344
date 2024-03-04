@@ -33,3 +33,8 @@ class TestExample(unittest.TestCase):
         """Return books with library and title parameters"""
         result = get_rest_call(self, 'http://localhost:5000/books?location=pittsford&title=Dynasty')
         self.assertEqual(1, len(result))
+
+    def test_book_title_not_found(self):
+        """Return an empty list if title doesn't exist"""
+        result = get_rest_call(self, 'http://localhost:5000/books?title=DNE')
+        self.assertEqual(0, len(result))
