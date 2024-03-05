@@ -7,12 +7,15 @@ class Books(Resource):
     def get(self):
         count = len(request.args)
         print(f"/books received {count} parameter(s)")
+        # if there are no query parameters, return all books
         if (count == 0):
             return exec_get_all("""
                 SELECT libraries.location, books.title, inventory.copies FROM inventory
                     INNER JOIN libraries ON libraries.id = inventory.library_id
                     INNER JOIN books     ON books.id = inventory.book_id
             """)
+        # for each query parameter, return books where that criteria is met by looping through the colunns for matches
+        # and adding "AND" when necessary
         else:
             sql = """ 
                 SELECT libraries.location, books.title, inventory.copies FROM inventory
