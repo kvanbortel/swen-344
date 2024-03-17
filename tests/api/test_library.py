@@ -1,8 +1,9 @@
 import unittest
 from tests.test_utils import *
+import json
 
 
-class TestExample(unittest.TestCase):
+class TestLibrary(unittest.TestCase):
 
     def setUp(self):  
         """Initialize DB using API call"""
@@ -38,3 +39,26 @@ class TestExample(unittest.TestCase):
         """Return an empty list if title doesn't exist"""
         result = get_rest_call(self, 'http://localhost:5000/books?title=DNE')
         self.assertEqual(0, len(result))
+
+    def test_param_post_user(self):
+        """Add a new user to the database"""
+        print(f'The URL used is: http://localhost:5000 ... but there is json data in the body of the POST')
+
+        print('Current contents are:')
+        result = get_rest_call(self, 'http://localhost:5000/users')
+        print(f'{result}\n')
+
+        # Variables for the data to be sent
+        _name = 'Keanu Reeves'
+        _phone = '127-6543-999'
+        _email = 'yourebreathtaking@aol.com'
+
+        print(f'Want to add {_name}, {_phone}, and {_email}; we will use a POST API')
+        data = dict(name=_name, phone=_phone, email=_email)
+        jdata = json.dumps(data)
+        hdr = {'content-type': 'application/json'}
+        result = post_rest_call(self, 'http://localhost:5000/users', jdata, hdr)
+        print(f'Result [the PK of the new row]:{result}')
+       
+        result = get_rest_call(self, 'http://localhost:5000/users')
+        print(f'New contents are:\n{result}\n')
