@@ -50,3 +50,11 @@ class Users(Resource):
         """, (new_name, phone, email, user_id))
         print('PUT: returning ' + str(result))
         return result
+
+    def delete(self):
+        """Deactivates a user"""
+        name = request.args['name']
+        exec_commit("""
+            UPDATE users SET active = FALSE
+            WHERE users.name = %s
+        """, (name,))

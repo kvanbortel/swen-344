@@ -1,6 +1,7 @@
 import unittest
 from tests.test_utils import *
 import json
+from src.db import library
 
 
 class TestLibrary(unittest.TestCase):
@@ -85,3 +86,9 @@ class TestLibrary(unittest.TestCase):
        
         result = get_rest_call(self, 'http://localhost:5000/users')
         print(f'New contents are:\n{result}\n')
+
+    def test_delete_user(self):
+        name = 'Art Garfunkel'
+        print(f'User {name} was active: ' + str(library.isActive(name)))
+        delete_rest_call(self, 'http://localhost:5000/users?name=Art%20Garfunkel')
+        print(f'User {name} is active: ' + str(library.isActive(name)))

@@ -34,8 +34,4 @@ class Books(Resource):
             print(params)
             result = exec_get_all(sql, params)
             return result
-        
-    def delete(self):
-        print("Delete API call")
-        print(request.data)
 
