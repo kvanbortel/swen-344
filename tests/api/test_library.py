@@ -50,7 +50,7 @@ class TestLibrary(unittest.TestCase):
 
         # Variables for the data to be sent
         _name = 'Keanu Reeves'
-        _phone = '127-6543-999'
+        _phone = '127-654-9999'
         _email = 'yourebreathtaking@aol.com'
 
         print(f'Want to add {_name}, {_phone}, and {_email}; we will use a POST API')
@@ -59,6 +59,29 @@ class TestLibrary(unittest.TestCase):
         hdr = {'content-type': 'application/json'}
         result = post_rest_call(self, 'http://localhost:5000/users', jdata, hdr)
         print(f'Result [the PK of the new row]:{result}')
+       
+        result = get_rest_call(self, 'http://localhost:5000/users')
+        print(f'New contents are:\n{result}\n')
+
+    def test_param_put_user(self):
+        """Edit a user's information"""
+        print(f'The URL used is: http://localhost:5000 ... but there is json data in the body of the PUT')
+
+        print('Current contents are:')
+        result = get_rest_call(self, 'http://localhost:5000/users')
+        print(f'{result}\n')
+
+        # Variables for the data to be sent
+        _old_name = 'Art Garfunkel'
+        _new_name = 'Artist Dafunkel'
+        _phone = '999-999-8871'
+        _email = 'thefunkel@aol.com'
+
+        print(f'Want to modify {_old_name} user with new: {_new_name}, {_phone}, {_email}; we will use a PUT API')
+        data = dict(old_name=_old_name, new_name=_new_name, phone=_phone, email=_email)
+        jdata = json.dumps(data)
+        hdr = {'content-type': 'application/json'}
+        result = put_rest_call(self, 'http://localhost:5000/users', jdata, hdr)
        
         result = get_rest_call(self, 'http://localhost:5000/users')
         print(f'New contents are:\n{result}\n')

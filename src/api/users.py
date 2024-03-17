@@ -23,4 +23,30 @@ class Users(Resource):
             VALUES (%s, %s, %s)
             RETURNING id
         """, (name, phone, email))
-        return result;
+        return result
+
+    def put(self):
+        """Extracts data from body and updates user row"""
+        parser = reqparse.RequestParser()
+        parser.add_argument('old_name', type=str)
+        parser.add_argument('new_name', type=str)
+        parser.add_argument('phone', type=str)
+        parser.add_argument('email', type=str)
+        args = parser.parse_args()
+        old_name = args['old_name']
+        new_name = args['new_name']
+        phone = args['phone']
+        email = args['email']
+        # Find the users row that relates to the given user
+        user_id, = exec_get_one("""
+            SELECT users.id FROM users
+            WHERE users.name = %s
+        """, (old_name,))
+        # Now change the data for that user
+        result = exec_commit_with_id("""
+            UPDATE users SET name = %s, phone = %s, email = %s
+            WHERE id = %s
+            RETURNING id
+        """, (new_name, phone, email, user_id))
+        print('PUT: returning ' + str(result))
+        return result
