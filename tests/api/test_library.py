@@ -53,9 +53,10 @@ class TestLibrary(unittest.TestCase):
         _name = 'Keanu Reeves'
         _phone = '127-654-9999'
         _email = 'yourebreathtaking@aol.com'
+        _password = 'K567'
 
-        print(f'Want to add {_name}, {_phone}, and {_email}; we will use a POST API')
-        data = dict(name=_name, phone=_phone, email=_email)
+        print(f'Want to add {_name}, {_phone}, {_email}, and {_password}; we will use a POST API')
+        data = dict(name=_name, phone=_phone, email=_email, password=_password)
         jdata = json.dumps(data)
         hdr = {'content-type': 'application/json'}
         result = post_rest_call(self, 'http://localhost:5000/users', jdata, hdr)
@@ -88,12 +89,25 @@ class TestLibrary(unittest.TestCase):
         print(f'New contents are:\n{result}\n')
 
     def test_delete_user(self):
+        """Delete (deactivate) a user"""
         name = 'Art Garfunkel'
         print(f'User {name} was active: ' + str(library.isActive(name)))
         delete_rest_call(self, 'http://localhost:5000/users?name=Art%20Garfunkel')
         print(f'User {name} is active: ' + str(library.isActive(name)))
 
     def test_get_user_checkouts(self):
-        name = 'Art Garfunkel'
-        data = get_rest_call(self, 'http://localhost:5000/checkout?user=Mary%20Shelley')
+        """List the books a user has checked out"""
+        name = 'Mary Shelley'
+        data = get_rest_call(self, 'http://localhost:5000/list_checkout?user=Mary%20Shelley')
         print(data)
+
+    def test_login_success(self):
+        """Successful login returns session key"""
+        _name = 'Art Garfunkel'
+        _password = 'password'
+
+        data = dict(name=_name, password=_password)
+        jdata = json.dumps(data)
+        hdr = {'content-type': 'application/json'}
+        result = post_rest_call(self, 'http://localhost:5000/login', jdata, hdr) 
+        print(f'\n{result}\n')

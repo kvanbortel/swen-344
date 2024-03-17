@@ -10,7 +10,9 @@ CREATE TABLE users(
     active      BOOLEAN DEFAULT TRUE,
     name        TEXT NOT NULL DEFAULT '',
     phone       VARCHAR(12) NOT NULL,
-    email       TEXT NOT NULL DEFAULT ''
+    email       TEXT NOT NULL DEFAULT '',
+    password    BYTEA NOT NULL,
+    session_key BYTEA
 );
 
 DROP TYPE IF EXISTS book_type;

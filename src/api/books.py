@@ -35,7 +35,7 @@ class Books(Resource):
             result = exec_get_all(sql, params)
             return result
 
-class Checkout(Resource):
+class ListCheckout(Resource):
     def get(self):
         """List checkout data"""
         user = request.args['user']

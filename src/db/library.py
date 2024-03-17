@@ -1,5 +1,6 @@
 import os
 from .swen344_db_utils import *
+import hashlib
 
 def rebuild_tables():
     exec_sql_file('src/db/schema.sql')
@@ -27,3 +28,8 @@ def isActive(name):
         WHERE users.name = %s
     """, (name,))
     return is_active
+
+def hashPassword(password):
+    """Hash the given password"""
+    hashed_password = hashlib.sha512(password.encode())
+    return hashed_password.digest()
