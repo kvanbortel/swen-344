@@ -92,3 +92,8 @@ class TestLibrary(unittest.TestCase):
         print(f'User {name} was active: ' + str(library.isActive(name)))
         delete_rest_call(self, 'http://localhost:5000/users?name=Art%20Garfunkel')
         print(f'User {name} is active: ' + str(library.isActive(name)))
+
+    def test_get_user_checkouts(self):
+        name = 'Art Garfunkel'
+        data = get_rest_call(self, 'http://localhost:5000/checkout?user=Mary%20Shelley')
+        print(data)

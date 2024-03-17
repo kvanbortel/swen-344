@@ -13,7 +13,9 @@ api.add_resource(Version, '/manage/version') #Management API for checking DB ver
 
 api.add_resource(Books, '/books')
 
-api.add_resource(Users, '/users') 
+api.add_resource(Checkout, '/checkout')
+
+api.add_resource(Users, '/users')
 
 
 if __name__ == '__main__':

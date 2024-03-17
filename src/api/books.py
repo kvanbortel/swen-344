@@ -35,3 +35,15 @@ class Books(Resource):
             result = exec_get_all(sql, params)
             return result
 
+class Checkout(Resource):
+    def get(self):
+        """List checkout data"""
+        user = request.args['user']
+        books = exec_get_all("""
+            SELECT books.title FROM books
+                INNER JOIN checkout ON books.id = checkout.book_id
+                INNER JOIN users    ON users.id = checkout.user_id
+            WHERE users.name = %s
+            ORDER BY title ASC
+        """, (user,))
+        return books
