@@ -22,6 +22,14 @@ class Users(Resource):
         email = args.email
         password = args.password
         pwd_digest = library.hashPassword(password)
+        # Check if user already exists
+        exists, = exec_get_one("""
+            SELECT EXISTS
+                (SELECT users.id FROM users
+                WHERE users.name = %s)
+        """, (name,))
+        if exists:
+            return library.makeError('User already exists', 409)
         # Add new row to users table
         result = exec_commit_with_id("""
             INSERT INTO users (name, phone, email, password)
@@ -43,10 +51,13 @@ class Users(Resource):
         phone = args.phone
         email = args.email
         # Find the users row that relates to the given user
-        user_id, = exec_get_one("""
+        result = exec_get_one("""
             SELECT users.id FROM users
             WHERE users.name = %s
         """, (old_name,))
+        if result is None:
+                return library.makeError('User doesn\'t exist', 404)
+        user_id = result,
         # Now change the data for that user
         result = exec_commit_with_id("""
             UPDATE users SET name = %s, phone = %s, email = %s
@@ -58,7 +69,20 @@ class Users(Resource):
 
     def delete(self):
         """Deactivates a user"""
+        # Check if user is authenticated
+        if not library.isAuthenticated2():
+            return library.makeError('User not authenticated', 401)
+        # Check if user exists
         name = request.args['name']
+        exists, = exec_get_one("""
+            SELECT EXISTS
+                (SELECT users.id FROM users
+                WHERE users.name = %s)
+        """, (name,))
+        print(exists)
+        if not exists:
+            return library.makeError('User doesn\'t exist', 404)
+        # Deactivate user
         exec_commit("""
             UPDATE users SET active = FALSE
             WHERE users.name = %s
@@ -66,7 +90,7 @@ class Users(Resource):
 
 class Login(Resource):
     def post(self):
-        """Gives user a session key""" 
+        """Gives user a session key"""
         parser = reqparse.RequestParser()
         parser.add_argument('name', type=str)
         parser.add_argument('password', type=str)
@@ -75,13 +99,13 @@ class Login(Resource):
         password = args.password
         pwd_digest = library.hashPassword(password)
         # Check if name/pwd exists in users
-        try:
-            user_id, = exec_get_one("""
-                SELECT users.id FROM users
-                WHERE users.name = %s and users.password = %s
-            """, (name, pwd_digest))
-        except TypeError:
-            return 'Login unsuccessful. User not found', 404
+        result = exec_get_one("""
+            SELECT users.id FROM users
+            WHERE users.name = %s and users.password = %s
+        """, (name, pwd_digest))
+        if result is None:
+            return library.makeError('Incorrect username or password', 401)
+        user_id = result,
         # Generate session key
         session_key = secrets.token_bytes(16)
         # Add session key
@@ -113,7 +137,7 @@ class Checkout(Resource):
     def post(self):
         """A user checks out a book"""
         if not library.isAuthenticated():
-            return 'User not authenticated', 401
+            return library.makeError('User not authenticated', 401)
         user = request.args['user']
         title = request.args['title']
         _library = request.args['library']
@@ -124,7 +148,7 @@ class Reserve(Resource):
     def post(self):
         """A user reserves a book"""
         if not library.isAuthenticated():
-            return 'User not authenticated', 401
+            return library.makeError('User not authenticated', 401)
         user = request.args['user']
         title = request.args['title']
         _library = request.args['library']

@@ -66,6 +66,21 @@ class TestLibrary(unittest.TestCase):
         result = get_rest_call(self, 'http://localhost:5000/users')
         print(f'New contents are:\n{result}\n')
 
+    def test_post_user_failure(self):
+        """Post user fails when user already exists"""
+        # Variables for the data to be sent
+        _name = 'Art Garfunkel'
+        _phone = '127-654-9999'
+        _email = 'yourebreathtaking@aol.com'
+        _password = 'K567'
+
+        print(f'Want to add {_name}, {_phone}, {_email}, and {_password}; we will use a POST API')
+        data = dict(name=_name, phone=_phone, email=_email, password=_password)
+        jdata = json.dumps(data)
+        hdr = {'content-type': 'application/json'}
+        result = post_rest_call(self, 'http://localhost:5000/users', jdata, hdr, 409)
+        print(result)
+
     def test_param_put_user(self):
         """Edit a user's information"""
         print(f'The URL used is: http://localhost:5000 ... but there is json data in the body of the PUT')
@@ -89,18 +104,91 @@ class TestLibrary(unittest.TestCase):
         result = get_rest_call(self, 'http://localhost:5000/users')
         print(f'New contents are:\n{result}\n')
 
+    def test_put_user_failure(self):
+        """Try to edit information of a user that doesn't exist"""
+        # Variables for the data to be sent
+        _old_name = 'DNE'
+        _new_name = 'Artist Dafunkel'
+        _phone = '999-999-8871'
+        _email = 'thefunkel@aol.com'
+
+        print(f'Want to modify {_old_name} user with new: {_new_name}, {_phone}, {_email}; we will use a PUT API')
+        data = dict(old_name=_old_name, new_name=_new_name, phone=_phone, email=_email)
+        jdata = json.dumps(data)
+        hdr = {'content-type': 'application/json'}
+        result = put_rest_call(self, 'http://localhost:5000/users', jdata, hdr, 404)
+        print(result)
+
     def test_delete_user(self):
         """Delete (deactivate) a user"""
+        #Login
+        _name = 'Mary Shelley'
+        _password = 'password'
+
+        data = dict(name=_name, password=_password)
+        jdata = json.dumps(data)
+        hdr = {'content-type': 'application/json'}
+        result = post_rest_call(self, 'http://localhost:5000/login', jdata, hdr)
+        session_key = json.loads(result)['session_key']
+
+        # Delete user
         name = 'Art Garfunkel'
         print(f'User {name} was active: ' + str(library.isActive(name)))
+
+        hdr = {'session_key': session_key}
         params = urlencode({'name': name})
-        delete_rest_call(self, f'http://localhost:5000/users?{params}')
+        delete_rest_call(self, f'http://localhost:5000/users?{params}', hdr)
+
         print(f'User {name} is active: ' + str(library.isActive(name)))
+
+    def test_delete_user_session_failure(self):
+        name = 'Art Garfunkel'
+        print(f'User {name} was active: ' + str(library.isActive(name)))
+
+        hdr = {'session_key': 'NULL'}
+        params = urlencode({'name': name})
+        result = delete_rest_call(self, f'http://localhost:5000/users?{params}', hdr, 401)
+        print(result)
+
+        print(f'User {name} is active: ' + str(library.isActive(name)))
+
+
+    def test_delete_user_DNE_failure(self):
+        """Try to delete a user that doesn't exist"""
+        #Login
+        _name = 'Mary Shelley'
+        _password = 'password'
+
+        data = dict(name=_name, password=_password)
+        jdata = json.dumps(data)
+        hdr = {'content-type': 'application/json'}
+        result = post_rest_call(self, 'http://localhost:5000/login', jdata, hdr)
+        session_key = json.loads(result)['session_key']
+
+        # Try to delete user that doesn't exist
+        name = 'DNE'
+        hdr = {'session_key': session_key}
+        params = urlencode({'name': name})
+        result = delete_rest_call(self, f'http://localhost:5000/users?{params}', hdr, 404)
+        print(result)
 
     def test_get_user_checkouts(self):
         """List the books a user has checked out"""
         data = get_rest_call(self, 'http://localhost:5000/list_checkout?user=Mary%20Shelley')
         print(data)
+
+    def test_login_failure(self):
+        """Login fails with incorrect password"""
+        hdr = {'content-type': 'application/json'}
+
+        #Login
+        _name = 'Mary Shelley'
+        _password = 'not_password'
+
+        data = dict(name=_name, password=_password)
+        jdata = json.dumps(data)
+        result = post_rest_call(self, 'http://localhost:5000/login', jdata, hdr, 401)
+        print(result)
 
     def test_login_checkout_reserve_success(self):
         """Successful login returns session key"""
@@ -145,3 +233,23 @@ class TestLibrary(unittest.TestCase):
         jdata = json.dumps(data)
         put_rest_call(self, 'http://localhost:5000/logout', jdata, hdr)
 
+    def test_checkout_reserve_session_failure(self):
+        hdr = {'content-type': 'application/json'}
+        # A user can't check out a book if not logged in
+        _name = 'Mary Shelley'
+        _title = 'The Secret History'
+        _library = 'test_library'
+        _date = '2024-01-02'
+
+        data = dict(session_key='NULL')
+        jdata = json.dumps(data)
+        params = urlencode({'user': _name, 'title': _title, 'library': _library, 'date': _date})
+        result = post_rest_call(self, f'http://localhost:5000/checkout?{params}', jdata, hdr, 401)
+        print(result)
+
+        # A user can't reserve a book if not logged in
+        _title = 'Dynasty'
+        params = urlencode({'user': _name, 'title': _title, 'library': _library})
+        post_rest_call(self, f'http://localhost:5000/reserve?{params}', jdata, hdr, 401)
+        print(result)
+        self.assertEqual(library.isReserved(_title, _library), 0)

@@ -161,3 +161,18 @@ def isAuthenticated():
             WHERE users.session_key = %s)
     """, (session_key,))
     return _isAuthenticated
+
+def isAuthenticated2():
+    """Authenticate a user's session key"""
+    session_key = request.headers['session_key']
+    session_key = base64.b64decode(session_key)
+
+    _isAuthenticated, = exec_get_one("""
+        SELECT EXISTS
+            (SELECT users.id FROM users
+            WHERE users.session_key = %s)
+    """, (session_key,))
+    return _isAuthenticated
+
+def makeError(message, code):
+    return json.dumps(dict(message=message)), code
