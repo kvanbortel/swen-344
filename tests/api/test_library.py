@@ -104,12 +104,14 @@ class TestLibrary(unittest.TestCase):
 
     def test_login_checkout_reserve_success(self):
         """Successful login returns session key"""
+        hdr = {'content-type': 'application/json'}
+
+        #Login
         _name = 'Mary Shelley'
         _password = 'password'
 
         data = dict(name=_name, password=_password)
         jdata = json.dumps(data)
-        hdr = {'content-type': 'application/json'}
         result = post_rest_call(self, 'http://localhost:5000/login', jdata, hdr)
         print(f'\n{result}\n')
         session_key = json.loads(result)['session_key']
@@ -137,3 +139,9 @@ class TestLibrary(unittest.TestCase):
         params = urlencode({'user': _name, 'title': _title, 'library': _library})
         post_rest_call(self, f'http://localhost:5000/reserve?{params}', jdata, hdr)
         self.assertEqual(library.isReserved(_title, _library), 1)
+
+        # Logout
+        data = dict(session_key=session_key, name=_name)
+        jdata = json.dumps(data)
+        put_rest_call(self, 'http://localhost:5000/logout', jdata, hdr)
+

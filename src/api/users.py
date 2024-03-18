@@ -95,9 +95,19 @@ class Login(Resource):
         )
         return json.dumps(data)
 
-#class Logout(Resource):
-    # def post(self):
-#############################################################
+class Logout(Resource):
+    def put(self):
+        """A user logs out"""
+        if not library.isAuthenticated():
+            return 'User not authenticated', 401
+        parser = reqparse.RequestParser()
+        parser.add_argument('name', type=str)
+        args = parser.parse_args()
+        name = args.name
+        exec_commit("""
+            UPDATE users SET session_key = NULL
+            WHERE users.name = %s
+        """, (name,))
 
 class Checkout(Resource):
     def post(self):

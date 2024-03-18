@@ -19,6 +19,8 @@ api.add_resource(Users, '/users')
 
 api.add_resource(Login, '/login')
 
+api.add_resource(Logout, '/logout')
+
 api.add_resource(Checkout, '/checkout')
 
 api.add_resource(Reserve, '/reserve')
