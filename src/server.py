@@ -21,6 +21,8 @@ api.add_resource(Login, '/login')
 
 api.add_resource(Checkout, '/checkout')
 
+api.add_resource(Reserve, '/reserve')
+
 if __name__ == '__main__':
     rebuild_tables()
     app.run(debug=True)

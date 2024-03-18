@@ -2,6 +2,7 @@ import unittest
 from tests.test_utils import *
 import json
 from src.db import library
+from urllib.parse import urlencode
 
 
 class TestLibrary(unittest.TestCase):
@@ -92,22 +93,47 @@ class TestLibrary(unittest.TestCase):
         """Delete (deactivate) a user"""
         name = 'Art Garfunkel'
         print(f'User {name} was active: ' + str(library.isActive(name)))
-        delete_rest_call(self, 'http://localhost:5000/users?name=Art%20Garfunkel')
+        params = urlencode({'name': name})
+        delete_rest_call(self, f'http://localhost:5000/users?{params}')
         print(f'User {name} is active: ' + str(library.isActive(name)))
 
     def test_get_user_checkouts(self):
         """List the books a user has checked out"""
-        name = 'Mary Shelley'
         data = get_rest_call(self, 'http://localhost:5000/list_checkout?user=Mary%20Shelley')
         print(data)
 
-    def test_login_success(self):
+    def test_login_checkout_reserve_success(self):
         """Successful login returns session key"""
-        _name = 'Art Garfunkel'
+        _name = 'Mary Shelley'
         _password = 'password'
 
         data = dict(name=_name, password=_password)
         jdata = json.dumps(data)
         hdr = {'content-type': 'application/json'}
-        result = post_rest_call(self, 'http://localhost:5000/login', jdata, hdr) 
+        result = post_rest_call(self, 'http://localhost:5000/login', jdata, hdr)
         print(f'\n{result}\n')
+        session_key = json.loads(result)['session_key']
+
+        # A user can check out a book if logged in
+        _title = 'The Secret History'
+        _library = 'test_library'
+        _date = '2024-01-02'
+
+        print('Current user checkout contents are:')
+        data = get_rest_call(self, 'http://localhost:5000/list_checkout?user=Mary%20Shelley')
+        print(f'{data}\n')
+
+        data = dict(session_key=session_key)
+        jdata = json.dumps(data)
+        params = urlencode({'user': _name, 'title': _title, 'library': _library, 'date': _date})
+        post_rest_call(self, f'http://localhost:5000/checkout?{params}', jdata, hdr)
+
+        print('User checkout contents are now:')
+        data = get_rest_call(self, 'http://localhost:5000/list_checkout?user=Mary%20Shelley')
+        print(f'{data}\n')
+
+        # Reserve a book
+        _title = 'Dynasty'
+        params = urlencode({'user': _name, 'title': _title, 'library': _library})
+        post_rest_call(self, f'http://localhost:5000/reserve?{params}', jdata, hdr)
+        self.assertEqual(library.isReserved(_title, _library), 1)

@@ -95,6 +95,27 @@ class Login(Resource):
         )
         return json.dumps(data)
 
+#class Logout(Resource):
+    # def post(self):
+#############################################################
+
 class Checkout(Resource):
-    #def get(self):
-    """A user checks out a book"""
+    def post(self):
+        """A user checks out a book"""
+        if not library.isAuthenticated():
+            return 'User not authenticated', 401
+        user = request.args['user']
+        title = request.args['title']
+        _library = request.args['library']
+        date = request.args['date']
+        library.checkoutBook(user, title, _library, date)
+
+class Reserve(Resource):
+    def post(self):
+        """A user reserves a book"""
+        if not library.isAuthenticated():
+            return 'User not authenticated', 401
+        user = request.args['user']
+        title = request.args['title']
+        _library = request.args['library']
+        library.reserveBook(user, title, _library)
