@@ -1,7 +1,6 @@
 from flask_restful import Resource, reqparse, request
 from db import library
 from db.swen344_db_utils import *
-import json
 
 class Books(Resource):
     def get(self):
@@ -34,8 +33,16 @@ class Books(Resource):
             print(params)
             result = exec_get_all(sql, params)
             return result
-        
-    def delete(self):
-        print("Delete API call")
-        print(request.data)
 
+class ListCheckout(Resource):
+    def get(self):
+        """List checkout data"""
+        user = request.args['user']
+        books = exec_get_all("""
+            SELECT books.title FROM books
+                INNER JOIN checkout ON books.id = checkout.book_id
+                INNER JOIN users    ON users.id = checkout.user_id
+            WHERE users.name = %s
+            ORDER BY title ASC
+        """, (user,))
+        return books

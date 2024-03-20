@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_restful import Resource, Api
 from api.books import *
-from api.users import Users
+from api.users import *
 from api.management import *
 
 app = Flask(__name__)
@@ -13,8 +13,17 @@ api.add_resource(Version, '/manage/version') #Management API for checking DB ver
 
 api.add_resource(Books, '/books')
 
-api.add_resource(Users, '/users') 
+api.add_resource(ListCheckout, '/list_checkout')
 
+api.add_resource(Users, '/users')
+
+api.add_resource(Login, '/login')
+
+api.add_resource(Logout, '/logout')
+
+api.add_resource(Checkout, '/checkout')
+
+api.add_resource(Reserve, '/reserve')
 
 if __name__ == '__main__':
     rebuild_tables()

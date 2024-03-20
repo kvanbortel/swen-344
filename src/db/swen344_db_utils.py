@@ -47,3 +47,12 @@ def exec_commit(sql, args={}):
     conn.commit()
     conn.close()
     return result
+
+def exec_commit_with_id(sql, args={}):
+    conn = connect()
+    cur = conn.cursor()
+    result = cur.execute(sql, args)
+    result = cur.fetchall()
+    conn.commit()
+    conn.close()
+    return result
