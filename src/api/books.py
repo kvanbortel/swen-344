@@ -1,7 +1,6 @@
 from flask_restful import Resource, reqparse, request
 from db import library
 from db.swen344_db_utils import *
-import json
 
 class Books(Resource):
     def get(self):

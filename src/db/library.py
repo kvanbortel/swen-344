@@ -33,7 +33,15 @@ def isActive(name):
     return is_active
 
 def hashPassword(password):
-    """Hash the given password"""
+    """
+    Hash the given password
+
+    Args:
+        password: the user's password
+
+    Returns:
+        the hashed password using sha512
+    """
     hashed_password = hashlib.sha512(password.encode())
     return hashed_password.digest()
 
@@ -112,12 +120,14 @@ def isReserved(title, library):
         True if the book is reserved, False otherwise
     """
     exists, = exec_get_one("""
-        SELECT COUNT(books.title) FROM reserve
+        SELECT EXISTS(
+        SELECT books.title FROM reserve
             INNER JOIN books ON books.id = reserve.book_id
         WHERE reserve.library_id =
             (SELECT libraries.id FROM libraries
             WHERE libraries.location = %s)
         AND books.title = %s
+        )
     """, (library, title))
     return exists
 
@@ -148,22 +158,12 @@ def reserveBook(user, title, library):
     """, (user, title, library))
 
 def isAuthenticated():
-    """Authenticate a user's session key"""
-    parser = reqparse.RequestParser()
-    parser.add_argument('session_key', type=str)
-    args = parser.parse_args()
-    session_key = args.session_key
-    session_key = base64.b64decode(session_key)
+    """
+    Authenticate a user's session key
 
-    _isAuthenticated, = exec_get_one("""
-        SELECT EXISTS
-            (SELECT users.id FROM users
-            WHERE users.session_key = %s)
-    """, (session_key,))
-    return _isAuthenticated
-
-def isAuthenticated2():
-    """Authenticate a user's session key"""
+    Returns:
+        True if authenticated, False otherwise
+    """
     session_key = request.headers['session_key']
     session_key = base64.b64decode(session_key)
 
@@ -175,4 +175,14 @@ def isAuthenticated2():
     return _isAuthenticated
 
 def makeError(message, code):
-    return json.dumps(dict(message=message)), code
+    """
+    Raise and error
+
+    Args:
+        message: the error message
+        code:    the error code
+
+    Returns:
+        error message and code as json
+    """
+    return dict(message=message), code

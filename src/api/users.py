@@ -1,7 +1,6 @@
 from flask_restful import Resource, reqparse, request
 from db import library
 from db.swen344_db_utils import *
-import json
 import secrets
 import base64
 
@@ -70,7 +69,7 @@ class Users(Resource):
     def delete(self):
         """Deactivates a user"""
         # Check if user is authenticated
-        if not library.isAuthenticated2():
+        if not library.isAuthenticated():
             return library.makeError('User not authenticated', 401)
         # Check if user exists
         name = request.args['name']
@@ -113,11 +112,10 @@ class Login(Resource):
             UPDATE users SET session_key = %s
             WHERE id = %s
         """, (session_key, user_id))
-        data = dict(
-            message=f'Login successful.',
+        return dict(
+            message='Login successful.',
             session_key=base64.b64encode(session_key).decode(),
         )
-        return json.dumps(data)
 
 class Logout(Resource):
     def put(self):
