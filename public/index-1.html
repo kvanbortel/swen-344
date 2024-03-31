@@ -1,14 +1,50 @@
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Web Assignment</title>
-    <meta name="description" content="First web assignment">
+    <title>NutriKit</title>
+    <meta name="description" content="NutriKit">
     <meta name="author" content="Kayla Van Bortel">
+
+    <link rel="stylesheet" href="nutrikit.css">
+
+    <script type="text/javascript" src="nutrikit.js"></script>
 </head>
-<body style='font-family: "Segoe UI"'>
+<body>
     <h1 style="text-align:center">NutriKit Food Planner</h1>
     <h3 style="text-align:center">NutriKit allows you to select your groceries, and track your nutritional progress (good or bad)</h3>
 
+    <div class="flex-container">
+        <div>
+            <label for="foodGroups">Categories</label>
+            <select name="foodGroups" id="foodGroups" onchange="updateMenu()">
+                <option value="" selected disabled hidden></option>
+                <option value="proteins">Proteins</option>
+                <option value="fruits">Fruits</option>
+                <option value="vegetables">Vegetables</option>
+                <option value="dairy">Dairy</option>
+                <option value="grains">Grains</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="menuItems">Menu Items</label>
+            <select name="menuItems" id="menuItems" size="5" style="width:15em" onfocus="buttonAdd()">
+            </select>
+        </div>  
+
+        <div>
+            <label for="selectButton"><br/></label>
+            <input type="button" name="selectButton" id="selectButton" value=">>" onclick="updateSelection()">
+        </div>
+
+        <div>
+            <label for="selectedItems">Selected Items</label>
+            <select name="selectedItems" id="selectedItems" size="10" style="width:15em" onfocus="buttonRemove()">
+            </select>
+            <label class="hidden" for="selectedItems" id="calorieLabel">Total Calories:</label>
+        </div>
+    </div>
 </body>
 </html>
 
