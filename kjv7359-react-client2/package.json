@@ -1,6 +1,7 @@
 {
   "name": "kjv7359-react-client2",
   "version": "0.1.0",
+  "homepage": ".",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
