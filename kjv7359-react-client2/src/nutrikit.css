@@ -1,0 +1,27 @@
+* { font-family: "Segoe UI"; }
+
+body { background-color: cornsilk; }
+
+.flex-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.flex-container > div {
+  margin: 10px;
+  padding: 10px;
+}
+
+.selectBox {
+    width: 15em;
+}
+
+label {
+    display: block;
+    padding-bottom: 10px;
+}
+
+.hidden {
+    display: none;
+}
