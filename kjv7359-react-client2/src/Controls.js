@@ -9,8 +9,6 @@ const grains = {"bread": 200, "bagel": 300, "pita": 250, "naan": 210, "tortilla"
 const foodGroups = {"proteins": proteins, "fruits": fruits, "vegetables": vegetables, "dairy": dairy, "grains": grains}
 const allFoods = {...proteins, ...fruits, ...vegetables, ...dairy, ...grains}
 
-let addFoodItem = true
-let calorieTotal = 0
 
 class Controls extends Component
 {
@@ -23,7 +21,7 @@ class Controls extends Component
             selectedMenuItem: "",
             foodItems: [],
             selectedFoodId: "",
-            calorieId: ""
+            calorieTotal: 0
         };
         this.nextFoodItemIndex = 0
     }
@@ -47,28 +45,34 @@ class Controls extends Component
     }
     updateSelection=()=>
 	{
+        let state = {}
+        let foodItems = this.state.foodItems
+        let calorieTotal = this.state.calorieTotal
         if (this.state.addFoodItem) { // add selection
             const menuSelection = this.state.selectedMenuItem
             if (menuSelection === "")
                 return
-            const foodItems = this.state.foodItems
             foodItems.push({value: this.nextFoodItemIndex.toString(), text: menuSelection})
             this.nextFoodItemIndex += 1
-            this.setState({foodItems: foodItems})
+            calorieTotal += allFoods[menuSelection] // calculate calories
         }
         else { // remove selection
             const foodSelection = this.state.selectedFoodId
             if (foodSelection === "")
                 return
-            let foodItems = this.state.foodItems
-            foodItems = foodItems.filter((item)=> item.value !== foodSelection)
-            let state = {foodItems: foodItems}
-            if (foodItems.length !== 0)
+            const index = foodItems.findIndex(item => item.value === foodSelection)
+            const foodName = foodItems[index].text
+            foodItems.splice(index, 1)
+            if (foodItems.length === 0)
             {
+                state.selectedFoodId = ""
+            }
+            else {
                 state.selectedFoodId = foodItems[foodItems.length - 1].value
             }
-            this.setState(state)
+            calorieTotal -= allFoods[foodName]
         }
+        this.setState({...state, foodItems: foodItems, calorieTotal: calorieTotal})
 	}
     render()
     {
@@ -101,7 +105,7 @@ class Controls extends Component
                     <select className="selectBox" id="selectedItems" size="10" value={this.state.selectedFoodId} onChange={this.updateFoodSelection} onFocus={this.setDirection(false)}>
                         {this.state.foodItems.map(option => <option value={option.value} key={option.value}>{option.text}</option>)}
                     </select>
-                    <label className="hidden" htmlFor="selectedItems">Total Calories:</label>
+                    <label className={this.state.foodItems.length === 0 ? "hidden" : ""} htmlFor="selectedItems">{`Total Calories: ${this.state.calorieTotal}`}</label>
                 </div>
             </div>
         </div>
