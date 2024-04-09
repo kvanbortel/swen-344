@@ -17,30 +17,58 @@ class Controls extends Component
     constructor(props) {
         super(props)
         this.state = {
-            buttonVal: ">>",
             addFoodItem: true,
             groupSelection: this.target,
-            options: [],
+            menuItems: [],
+            selectedMenuItem: "",
+            foodItems: [],
+            selectedFoodId: "",
+            calorieId: ""
         };
+        this.nextFoodItemIndex = 0
     }
     
     updateMenu=(e)=>
     {
         const selection = e.target.value
-        this.setState({groupSelection: selection, options: Object.keys(foodGroups[selection])})
+        this.setState({groupSelection: selection, menuItems: Object.keys(foodGroups[selection])})
     }
-    buttonAdd=()=>
+    updateMenuSelection=(e)=>
     {
-        this.setState({buttonVal: ">>", addFoodItem: true})
+        this.setState({selectedMenuItem: e.target.value})
     }
-    buttonRemove=()=>
+    updateFoodSelection=(e)=>
     {
-        this.setState({buttonVal: "<<", addFoodItem: false})
+        this.setState({selectedFoodId: e.target.value})
     }
-    updateSelection()
+    setDirection=(addFoodItem)=>
+    {
+        return () => this.setState({addFoodItem: addFoodItem})
+    }
+    updateSelection=()=>
 	{
-		alert ("Ouch you clicked me!")
-        
+        if (this.state.addFoodItem) { // add selection
+            const menuSelection = this.state.selectedMenuItem
+            if (menuSelection === "")
+                return
+            const foodItems = this.state.foodItems
+            foodItems.push({value: this.nextFoodItemIndex.toString(), text: menuSelection})
+            this.nextFoodItemIndex += 1
+            this.setState({foodItems: foodItems})
+        }
+        else { // remove selection
+            const foodSelection = this.state.selectedFoodId
+            if (foodSelection === "")
+                return
+            let foodItems = this.state.foodItems
+            foodItems = foodItems.filter((item)=> item.value !== foodSelection)
+            let state = {foodItems: foodItems}
+            if (foodItems.length !== 0)
+            {
+                state.selectedFoodId = foodItems[foodItems.length - 1].value
+            }
+            this.setState(state)
+        }
 	}
     render()
     {
@@ -48,8 +76,9 @@ class Controls extends Component
         <div>
             <div className="flex-container">
                 <div>
-                    <select onChange={this.updateMenu}>
-                        <option value="" selected disabled hidden></option>
+                    <label htmlFor="foodGroups">Categories</label>
+                    <select id="foodGroups" onChange={this.updateMenu} defaultValue="">
+                        <option value="" disabled hidden></option>
                         <option value="proteins">Proteins</option>
                         <option value="fruits">Fruits</option>
                         <option value="vegetables">Vegetables</option>
@@ -58,17 +87,21 @@ class Controls extends Component
                     </select>
                 </div>
                 <div>
-                    <select className="selectBox" size="5" onFocus={this.buttonAdd}>
-                        {this.state.options.map(option => <option value={option}>{option}</option>)}
+                    <label htmlFor="menuItems">Menu Items</label>
+                    <select className="selectBox" id="menuItems" size="5" value={this.state.selectedMenuItem} onChange={this.updateMenuSelection} onFocus={this.setDirection(true)}>
+                        {this.state.menuItems.map(option => <option value={option} key={option}>{option}</option>)}
                     </select>
                 </div>
                 <div>
-                    <input type="button" value={this.state.buttonVal} onClick={this.updateSelection}/>
+                    <label htmlFor="selectButton"><br/></label>
+                    <input type="button" id="selectButton" value={this.state.addFoodItem ? ">>" : "<<"} onClick={this.updateSelection}/>
                 </div>
                 <div>
-                    <select className="selectBox" size="10" onFocus={this.buttonRemove}>
+                    <label htmlFor="selectedItems">Selected Items</label>
+                    <select className="selectBox" id="selectedItems" size="10" value={this.state.selectedFoodId} onChange={this.updateFoodSelection} onFocus={this.setDirection(false)}>
+                        {this.state.foodItems.map(option => <option value={option.value} key={option.value}>{option.text}</option>)}
                     </select>
-                    <label class="hidden" for="selectedItems" id="calorieLabel">Total Calories:</label>
+                    <label className="hidden" htmlFor="selectedItems">Total Calories:</label>
                 </div>
             </div>
         </div>
