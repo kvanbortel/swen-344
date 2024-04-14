@@ -6,11 +6,6 @@ const dailyMaximums = {calories: 2000, totalFat: 67, saturatedFat: 20, transFat:
 
 class NutrientsModal extends Component
 {
-    constructor(props)
-    {
-        super(props);
-    }
-
     close = () =>
     {
         this.props.cancel();

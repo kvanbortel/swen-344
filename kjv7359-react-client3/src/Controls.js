@@ -12,12 +12,11 @@ class Controls extends Component
         super(props)
         this.nutrientNames = ["calories", "totalFat", "saturatedFat", "transFat", "protein", "carbohydrate"]
         this.state = {
-            groupSelection: this.target,
+            groupSelection: "",
             menuItems: [],
             selectedMenuItem: "",
             foodItems: [],
             foodSelection: "",
-            nutrientTotals: Object.fromEntries(this.nutrientNames.map(name => [name, 0])),
             dropdownOpen: false,
             calorieGoal: 2000,
             showEditModal: false,
@@ -31,11 +30,7 @@ class Controls extends Component
     
     updateMenu=(e)=>
     {
-        const selection = e.target.value
-        this.setState({
-            groupSelection: selection,
-            menuItems: this.state.foodData.filter(food => food.category === selection).map(food => food.id)
-        })
+        this.setState({groupSelection: e.target.value})
     }
     toggleDropdown=()=>
     {
@@ -52,40 +47,29 @@ class Controls extends Component
     }
 
     addSelection=()=>
-	{
+    {
         let foodItems = this.state.foodItems
-        let nutrientTotals = this.state.nutrientTotals
 
-        let menuSelection = this.state.selectedMenuItem
+        // this is bad practice but ReactStrap doesn't fire onChange when the contents change the selection
+        let menuSelection = document.getElementById("menuItems").value
         if (menuSelection === "")
             return
         menuSelection = parseInt(menuSelection)
         foodItems.push({key: this.nextFoodItemIndex.toString(), id: menuSelection})
         this.nextFoodItemIndex += 1
 
-        // nutrient totals
-        for (const name of this.nutrientNames)
-        {
-            nutrientTotals[name] += this.state.foodData[menuSelection][name]
-        }
-
-        this.setState({foodItems: foodItems, nutrientTotals: nutrientTotals})
-	}
+        this.setState({foodItems: foodItems})
+    }
     removeSelection=()=>
     {
         let state = {}
         let foodItems = this.state.foodItems
-        let nutrientTotals = this.state.nutrientTotals
 
-        const foodSelection = this.state.foodSelection
+        // this is bad practice but ReactStrap doesn't fire onChange when the contents change the selection
+        const foodSelection = document.getElementById("selectedItems").value
         if (foodSelection === "")
-        {
-            console.log("Oh no! There's nothing!")
             return
-        }
         const index = foodItems.findIndex(item => item.key === foodSelection)
-        console.log(`index=${index} length=${foodItems.length}`)
-        const food = this.state.foodData[foodItems[index].id]
         foodItems.splice(index, 1)
         if (foodItems.length === 0)
         {
@@ -95,13 +79,21 @@ class Controls extends Component
             state.foodSelection = foodItems[foodItems.length - 1].key
         }
 
-        // nutrient totals
-        for (const name of this.nutrientNames)
-        {
-            nutrientTotals[name] -= food[name]
-        }
+        this.setState({...state, foodItems: foodItems})
+    }
 
-        this.setState({...state, foodItems: foodItems, nutrientTotals: nutrientTotals})
+    getNutrientTotals=()=>
+    {
+        const nutrientTotals = Object.fromEntries(this.nutrientNames.map(name => [name, 0]))
+        let foodItems = this.state.foodItems
+        for(const item of foodItems)
+        {
+            for (const name of this.nutrientNames)
+            {
+                nutrientTotals[name] += this.state.foodData[item.id][name]
+            }
+        }
+        return nutrientTotals
     }
 
     changeGoal=(e)=>
@@ -131,16 +123,18 @@ class Controls extends Component
 
     getSingleNutrients=()=>
     {
-        const menuSelection = this.state.selectedMenuItem
-        if (menuSelection === "")
+        // this is bad practice but ReactStrap doesn't fire onChange when the contents change the selection
+        const menuSelection = document.getElementById("menuItems")
+        if (menuSelection === null || menuSelection.value === "")
         {
             return null
         }
-        return this.state.foodData[parseInt(menuSelection)]
+        return this.state.foodData[parseInt(menuSelection.value)]
     }
 
     updateFoodInfo=(data, isEdit)=>
     {
+        data = Object.assign({}, data)
         const name = data.name
         const foodData = this.state.foodData
 
@@ -149,7 +143,7 @@ class Controls extends Component
             return false
         }
 
-        if (!isEdit && foodData.find(food => food.name === name) !== null)
+        if (!isEdit && foodData.some(food => food.name === name))
         {
             return false
         }
@@ -157,7 +151,7 @@ class Controls extends Component
         for (const nutrient of this.nutrientNames)
         {
             data[nutrient] = parseFloat(data[nutrient])
-            if (isNaN(data[nutrient]))
+            if (!isFinite(data[nutrient]) || data[nutrient] < 0)
             {
                 return false
             }
@@ -185,6 +179,7 @@ class Controls extends Component
 
     render()
     {
+        const nutrientTotals = this.getNutrientTotals()
         return(
         <div>
             <Container className="pt">
@@ -206,13 +201,16 @@ class Controls extends Component
                         <CardHeader><h4 className="text-center">Menu Items</h4></CardHeader>
                         <Input type="select" id="menuItems" size="5" value={this.state.selectedMenuItem}
                                 onChange={this.updateMenuSelection}>
-                            {this.state.menuItems.map(id => this.state.foodData[id])
+                            {this.state.foodData.filter(food => food.category === this.state.groupSelection)
                                 .map(option => <option value={option.id} key={option.id}>{option.name}</option>)}
                         </Input>
                         <ButtonGroup>
-                            <Button disabled={this.state.selectedMenuItem === ""} color="info" onClick={this.showSingleItemModal(true)}>View Item</Button>
-                            <Button color="primary" onClick={this.showAddItemModal(true)}>Add Item</Button>
-                            <Button disabled={this.state.selectedMenuItem === ""} color="secondary" onClick={this.showEditItemModal(true)}>Edit Item</Button>
+                            <Button disabled={this.state.groupSelection === ""} color="info"
+                                onClick={this.showSingleItemModal(true)}>View Item</Button>
+                            <Button disabled={this.state.groupSelection === ""} color="primary"
+                                onClick={this.showAddItemModal(true)}>Add Item</Button>
+                            <Button disabled={this.state.groupSelection === ""} color="secondary"
+                                onClick={this.showEditItemModal(true)}>Edit Item</Button>
                         </ButtonGroup>
                         <NutrientsModal cancel={this.showSingleItemModal(false)} showHide={this.state.showSingleModal}
                             data={this.getSingleNutrients()}></NutrientsModal>
@@ -240,7 +238,7 @@ class Controls extends Component
                         </Input>
                         <Button color="info" onClick={this.showTotItemModal(true)}>View Total Item Info</Button>
                         <NutrientsModal cancel={this.showTotItemModal(false)} showHide={this.state.showTotModal}
-                            data={this.state.nutrientTotals}></NutrientsModal>
+                            data={nutrientTotals}></NutrientsModal>
                     </Card>
                 </Col>
                 </Row>
@@ -253,7 +251,8 @@ class Controls extends Component
                                 <Input placeholder="2000" onChange={this.changeGoal}/>
                             </InputGroup>
                         </CardHeader>
-                            <Progress value={this.state.nutrientTotals.calories / this.state.calorieGoal * 100}/>
+                            <Progress color={nutrientTotals.calories > this.state.calorieGoal ? "danger" : ""}
+                                value={nutrientTotals.calories / this.state.calorieGoal * 100}/>
                     </Card>
                     </Col>
                 </Row>

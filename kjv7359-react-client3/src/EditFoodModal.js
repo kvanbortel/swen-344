@@ -30,7 +30,7 @@ class EditFoodModal extends Component
     handleOpened=()=>
     {
         this.setState({
-            data: this.isEdit ? this.props.data :
+            data: this.isEdit ? Object.assign({}, this.props.data) :
                 {name: "", calories: 0, totalFat: 0, saturatedFat: 0, transFat: 0, protein: 0, carbohydrate: 0}
         })
     }
