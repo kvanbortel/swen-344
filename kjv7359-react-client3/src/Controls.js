@@ -1,6 +1,8 @@
 import React from 'react';
 import {Component} from 'react';
-import {Container, Row, Col, DropdownMenu, DropdownItem, DropdownToggle, Dropdown, Label, Input, Card, CardTitle, CardHeader, ButtonGroup, Button, Progress} from "reactstrap";
+import FModal from './FModal';
+import {Container, Row, Col, DropdownMenu, DropdownItem, DropdownToggle, Dropdown, Label, Input, Card, CardTitle, CardHeader, ButtonGroup, Button, Progress, Form, FormGroup, ModalHeader, ModalBody, ModalFooter, Modal, InputGroup, InputGroupText} from "reactstrap";
+
 require('react-dom');
 window.React2 = require('react');
 console.log(window.React1 === window.React2);
@@ -19,7 +21,6 @@ class Controls extends Component
     constructor(props) {
         super(props)
         this.state = {
-            addFoodItem: true,
             groupSelection: this.target,
             menuItems: [],
             selectedMenuItem: "",
@@ -27,7 +28,8 @@ class Controls extends Component
             selectedFoodId: "",
             calorieTotal: 0,
             dropdownOpen: false,
-            calorieGoal: 2000
+            calorieGoal: 2000,
+            showModal: false
         };
         this.nextFoodItemIndex = 0
     }
@@ -50,10 +52,7 @@ class Controls extends Component
     {
         this.setState({selectedFoodId: e.target.value})
     }
-    setDirection=(addFoodItem)=>
-    {
-        return () => this.setState({addFoodItem: addFoodItem})
-    }
+
     addSelection=()=>
 	{
         let state = {}
@@ -93,6 +92,20 @@ class Controls extends Component
         this.setState({...state, foodItems: foodItems, calorieTotal: calorieTotal})
     }
 
+    changeGoal=(e)=>
+    {
+        this.setState({calorieGoal: e.target.value})
+    }
+
+    showEditItemModal=()=>
+    {
+        this.setState({showModal: true})
+    }
+    closeEditItemModal=()=>
+    {
+        this.setState({showModal: false})
+    }
+
     render()
     {
         return(
@@ -114,9 +127,15 @@ class Controls extends Component
                 <Col xs="12" md="5" lg="3" className="ptb">
                     <Card>
                         <CardHeader><h4 className="text-center">Menu Items</h4></CardHeader>
-                        <Input type="select" id="menuItems" size="5" value={this.state.selectedMenuItem} onChange={this.updateMenuSelection} onFocus={this.setDirection(true)}>
+                        <Input type="select" id="menuItems" size="5" value={this.state.selectedMenuItem} onChange={this.updateMenuSelection}>
                             {this.state.menuItems.map(option => <option value={option} key={option}>{option}</option>)}
                         </Input>
+                        <ButtonGroup>
+                        <Button color="secondary" onClick={this.showItemInfoModal}>View Item Info</Button>
+                        <Button color="primary" onClick={this.showEditItemModal}>Edit Item Info</Button>
+                        </ButtonGroup>
+                        <FModal callback={this.updateFoodInfo} cancel={this.closeEditItemModal} showHide={this.state.showModal}>
+                        </FModal>
                     </Card>
                 </Col>
                 <Col xs="12" md="2" lg="2" className="ptb">
@@ -127,9 +146,10 @@ class Controls extends Component
                 <Col xs="12" md="5" lg="5" className="ptb">
                     <Card>
                         <CardHeader><h4 className="text-center">Selected Items</h4></CardHeader>
-                        <Input type="select" id="selectedItems" size="5" value={this.state.selectedFoodId} onChange={this.updateFoodSelection} onFocus={this.setDirection(false)}>
+                        <Input type="select" id="selectedItems" size="5" value={this.state.selectedFoodId} onChange={this.updateFoodSelection}>
                             {this.state.foodItems.map(option => <option value={option.value} key={option.value}>{option.text}</option>)}
                         </Input>
+                        <Button onClick={this.showItemInfoModal}>View Total Item Info</Button>
                         <Label className={this.state.foodItems.length === 0 ? "hidden" : ""} htmlFor="selectedItems">{`Total Calories: ${this.state.calorieTotal}`}</Label>
                     </Card>
                 </Col>
@@ -137,7 +157,12 @@ class Controls extends Component
                 <Row>
                     <Col xs="12" md="12" lg="12" className="ptb">
                     <Card>
-                        <CardHeader><h4 className="text-center">Calorie Goal</h4></CardHeader>
+                        <CardHeader>
+                            <InputGroup>
+                                <InputGroupText>Calorie Goal:</InputGroupText>
+                                <Input placeholder="2000" onChange={this.changeGoal}/>
+                            </InputGroup>
+                        </CardHeader>
                             <Progress value={this.state.calorieTotal / this.state.calorieGoal * 100}/>
                     </Card>
                     </Col>
