@@ -1,6 +1,6 @@
 import React from 'react';
 import {Component} from 'react';
-import {Container, Row, Col, DropdownMenu, DropdownItem, DropdownToggle, Dropdown, Label, Input, Card, CardTitle, CardHeader} from "reactstrap";
+import {Container, Row, Col, DropdownMenu, DropdownItem, DropdownToggle, Dropdown, Label, Input, Card, CardTitle, CardHeader, ButtonGroup, Button, Progress} from "reactstrap";
 require('react-dom');
 window.React2 = require('react');
 console.log(window.React1 === window.React2);
@@ -26,14 +26,15 @@ class Controls extends Component
             foodItems: [],
             selectedFoodId: "",
             calorieTotal: 0,
-            dropdownOpen: false
+            dropdownOpen: false,
+            calorieGoal: 2000
         };
         this.nextFoodItemIndex = 0
     }
     
     updateMenu=(e)=>
     {
-        const selection = e
+        const selection = e.target.value
         this.setState({groupSelection: selection, menuItems: Object.keys(foodGroups[selection])})
     }
     toggleDropdown=()=>
@@ -53,37 +54,45 @@ class Controls extends Component
     {
         return () => this.setState({addFoodItem: addFoodItem})
     }
-    updateSelection=()=>
+    addSelection=()=>
 	{
         let state = {}
         let foodItems = this.state.foodItems
         let calorieTotal = this.state.calorieTotal
-        if (this.state.addFoodItem) { // add selection
-            const menuSelection = this.state.selectedMenuItem
-            if (menuSelection === "")
-                return
-            foodItems.push({value: this.nextFoodItemIndex.toString(), text: menuSelection})
-            this.nextFoodItemIndex += 1
-            calorieTotal += allFoods[menuSelection] // calculate calories
-        }
-        else { // remove selection
-            const foodSelection = this.state.selectedFoodId
-            if (foodSelection === "")
-                return
-            const index = foodItems.findIndex(item => item.value === foodSelection)
-            const foodName = foodItems[index].text
-            foodItems.splice(index, 1)
-            if (foodItems.length === 0)
-            {
-                state.selectedFoodId = ""
-            }
-            else {
-                state.selectedFoodId = foodItems[foodItems.length - 1].value
-            }
-            calorieTotal -= allFoods[foodName]
-        }
+
+        const menuSelection = this.state.selectedMenuItem
+        if (menuSelection === "")
+            return
+        foodItems.push({value: this.nextFoodItemIndex.toString(), text: menuSelection})
+        this.nextFoodItemIndex += 1
+        calorieTotal += allFoods[menuSelection] // calculate calories
+
         this.setState({...state, foodItems: foodItems, calorieTotal: calorieTotal})
 	}
+    removeSelection=()=>
+    {
+        let state = {}
+        let foodItems = this.state.foodItems
+        let calorieTotal = this.state.calorieTotal
+
+        const foodSelection = this.state.selectedFoodId
+        if (foodSelection === "")
+            return
+        const index = foodItems.findIndex(item => item.value === foodSelection)
+        const foodName = foodItems[index].text
+        foodItems.splice(index, 1)
+        if (foodItems.length === 0)
+        {
+            state.selectedFoodId = ""
+        }
+        else {
+            state.selectedFoodId = foodItems[foodItems.length - 1].value
+        }
+        calorieTotal -= allFoods[foodName]
+
+        this.setState({...state, foodItems: foodItems, calorieTotal: calorieTotal})
+    }
+
     render()
     {
         return(
@@ -94,11 +103,11 @@ class Controls extends Component
                     <Dropdown isOpen={this.state.dropdownOpen} toggle={this.toggleDropdown}>
                         <DropdownToggle caret>Categories</DropdownToggle>
                         <DropdownMenu id="foodGroups">
-                            <DropdownItem onClick={() => this.updateMenu(proteins)} value="proteins">Proteins</DropdownItem>
-                            <DropdownItem onClick={() => this.updateMenu(fruits)} value="fruits">Fruits</DropdownItem>
-                            <DropdownItem onClick={() => this.updateMenu(vegetables)} value="vegetables">Vegetables</DropdownItem>
-                            <DropdownItem onClick={() => this.updateMenu(dairy)} value="dairy">Dairy</DropdownItem>
-                            <DropdownItem onClick={() => this.updateMenu(grains)} value="grains">Grains</DropdownItem>
+                            <DropdownItem onClick={this.updateMenu} value="proteins">Proteins</DropdownItem>
+                            <DropdownItem onClick={this.updateMenu} value="fruits">Fruits</DropdownItem>
+                            <DropdownItem onClick={this.updateMenu} value="vegetables">Vegetables</DropdownItem>
+                            <DropdownItem onClick={this.updateMenu} value="dairy">Dairy</DropdownItem>
+                            <DropdownItem onClick={this.updateMenu} value="grains">Grains</DropdownItem>
                         </DropdownMenu>
                     </Dropdown>
                 </Col>
@@ -110,21 +119,28 @@ class Controls extends Component
                         </Input>
                     </Card>
                 </Col>
-                <Col xs="6" md="1" lg="1" className="ptb">
-                    <input type="button" id="selectButton" value="<<" onClick={this.updateSelection}/>
-                </Col>
-                <Col xs="6" md="1" lg="1" className="ptb">
-                    <input type="button" id="selectButton" value=">>" onClick={this.updateSelection}/>
+                <Col xs="12" md="2" lg="2" className="ptb">
+                    <Button color="primary" id="selectButton" onClick={this.addSelection}>Add</Button>
+                    {' '}
+                    <Button color="primary" id="selectButton" onClick={this.removeSelection}>Remove</Button>
                 </Col>
                 <Col xs="12" md="5" lg="5" className="ptb">
                     <Card>
                         <CardHeader><h4 className="text-center">Selected Items</h4></CardHeader>
-                        <Input type="select" id="selectedItems" size="10" value={this.state.selectedFoodId} onChange={this.updateFoodSelection} onFocus={this.setDirection(false)}>
+                        <Input type="select" id="selectedItems" size="5" value={this.state.selectedFoodId} onChange={this.updateFoodSelection} onFocus={this.setDirection(false)}>
                             {this.state.foodItems.map(option => <option value={option.value} key={option.value}>{option.text}</option>)}
                         </Input>
                         <Label className={this.state.foodItems.length === 0 ? "hidden" : ""} htmlFor="selectedItems">{`Total Calories: ${this.state.calorieTotal}`}</Label>
                     </Card>
                 </Col>
+                </Row>
+                <Row>
+                    <Col xs="12" md="12" lg="12" className="ptb">
+                    <Card>
+                        <CardHeader><h4 className="text-center">Calorie Goal</h4></CardHeader>
+                            <Progress value={this.state.calorieTotal / this.state.calorieGoal * 100}/>
+                    </Card>
+                    </Col>
                 </Row>
             </Container>
         </div>
