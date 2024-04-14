@@ -1,49 +1,41 @@
 import React from 'react';
 import {Component} from 'react';
-import FModal from './FModal';
-import IModalTot from './IModalTot';
-import {Container, Row, Col, DropdownMenu, DropdownItem, DropdownToggle, Dropdown, Label, Input, Card, CardTitle, CardHeader, ButtonGroup, Button, Progress, Form, FormGroup, ModalHeader, ModalBody, ModalFooter, Modal, InputGroup, InputGroupText} from "reactstrap";
-import IModalSingle from './IModalSingle';
-import ModalAdd from './ModalAdd';
-
-require('react-dom');
-window.React2 = require('react');
-console.log(window.React1 === window.React2);
-
-const proteins = {"steak": 300, "ground beef": 200, "chicken": 100, "fish": 80, "soy": 50}
-const fruits = {"orange": 300, "banana": 200, "pineapple": 100, "grapes": 80, "blueberries": 50}
-const vegetables = {"romaine": 30, "green beans": 40, "squash": 100, "spinach": 50, "kale": 10}
-const dairy = {"milk": 300, "yoghurt": 200, "cheddar cheese": 200, "skim milk": 100, "cottage cheese": 80}
-const grains = {"bread": 200, "bagel": 300, "pita": 250, "naan": 210, "tortilla": 120}
-const foodGroups = {"proteins": proteins, "fruits": fruits, "vegetables": vegetables, "dairy": dairy, "grains": grains}
-const allFoods = {...proteins, ...fruits, ...vegetables, ...dairy, ...grains}
-
+import NutrientsModal from './NutrientsModal';
+import {Container, Row, Col, DropdownMenu, DropdownItem, DropdownToggle, Dropdown, Input, Card, CardHeader,
+        ButtonGroup, Button, Progress, InputGroup, InputGroupText} from "reactstrap";
+import EditFoodModal from './EditFoodModal';
+import baseFoodData from './foods.json';
 
 class Controls extends Component
 {
     constructor(props) {
         super(props)
+        this.nutrientNames = ["calories", "totalFat", "saturatedFat", "transFat", "protein", "carbohydrate"]
         this.state = {
             groupSelection: this.target,
             menuItems: [],
             selectedMenuItem: "",
             foodItems: [],
-            selectedFoodId: "",
-            calorieTotal: 0,
+            foodSelection: "",
+            nutrientTotals: Object.fromEntries(this.nutrientNames.map(name => [name, 0])),
             dropdownOpen: false,
             calorieGoal: 2000,
             showEditModal: false,
             showTotModal: false,
             showSingleModal: false,
-            showAddModal: false
-        };
+            showAddModal: false,
+            foodData: baseFoodData
+        }
         this.nextFoodItemIndex = 0
     }
     
     updateMenu=(e)=>
     {
         const selection = e.target.value
-        this.setState({groupSelection: selection, menuItems: Object.keys(foodGroups[selection])})
+        this.setState({
+            groupSelection: selection,
+            menuItems: this.state.foodData.filter(food => food.category === selection).map(food => food.id)
+        })
     }
     toggleDropdown=()=>
     {
@@ -56,46 +48,60 @@ class Controls extends Component
     }
     updateFoodSelection=(e)=>
     {
-        this.setState({selectedFoodId: e.target.value})
+        this.setState({foodSelection: e.target.value})
     }
 
     addSelection=()=>
 	{
-        let state = {}
         let foodItems = this.state.foodItems
-        let calorieTotal = this.state.calorieTotal
+        let nutrientTotals = this.state.nutrientTotals
 
-        const menuSelection = this.state.selectedMenuItem
+        let menuSelection = this.state.selectedMenuItem
         if (menuSelection === "")
             return
-        foodItems.push({value: this.nextFoodItemIndex.toString(), text: menuSelection})
+        menuSelection = parseInt(menuSelection)
+        foodItems.push({key: this.nextFoodItemIndex.toString(), id: menuSelection})
         this.nextFoodItemIndex += 1
-        calorieTotal += allFoods[menuSelection] // calculate calories
 
-        this.setState({...state, foodItems: foodItems, calorieTotal: calorieTotal})
+        // nutrient totals
+        for (const name of this.nutrientNames)
+        {
+            nutrientTotals[name] += this.state.foodData[menuSelection][name]
+        }
+
+        this.setState({foodItems: foodItems, nutrientTotals: nutrientTotals})
 	}
     removeSelection=()=>
     {
         let state = {}
         let foodItems = this.state.foodItems
-        let calorieTotal = this.state.calorieTotal
+        let nutrientTotals = this.state.nutrientTotals
 
-        const foodSelection = this.state.selectedFoodId
+        const foodSelection = this.state.foodSelection
         if (foodSelection === "")
+        {
+            console.log("Oh no! There's nothing!")
             return
-        const index = foodItems.findIndex(item => item.value === foodSelection)
-        const foodName = foodItems[index].text
+        }
+        const index = foodItems.findIndex(item => item.key === foodSelection)
+        console.log(`index=${index} length=${foodItems.length}`)
+        const food = this.state.foodData[foodItems[index].id]
         foodItems.splice(index, 1)
         if (foodItems.length === 0)
         {
-            state.selectedFoodId = ""
+            state.foodSelection = ""
         }
         else {
-            state.selectedFoodId = foodItems[foodItems.length - 1].value
+            state.foodSelection = foodItems[foodItems.length - 1].key
         }
-        calorieTotal -= allFoods[foodName]
 
-        this.setState({...state, foodItems: foodItems, calorieTotal: calorieTotal})
+        // nutrient totals
+        for (const name of this.nutrientNames)
+        {
+            nutrientTotals[name] -= food[name]
+        }
+
+        this.setState({...state, foodItems: foodItems, nutrientTotals: nutrientTotals})
     }
 
     changeGoal=(e)=>
@@ -103,39 +109,80 @@ class Controls extends Component
         this.setState({calorieGoal: e.target.value})
     }
 
-    showEditItemModal=()=>
+    showEditItemModal=(show)=>
     {
-        this.setState({showEditModal: true})
-    }
-    closeEditItemModal=()=>
-    {
-        this.setState({showEditModal: false})
+        return () => this.setState({showEditModal: show})
     }
 
-    showTotItemModal=()=>
+    showTotItemModal=(show)=>
     {
-        this.setState({showTotModal: true})
+        return () => this.setState({showTotModal: show})
     }
-    closeTotItemModal=()=>
+
+    showSingleItemModal=(show)=>
     {
-        this.setState({showTotModal: false})
+        return () => this.setState({showSingleModal: show})
     }
-    showSingleItemModal=()=>
+
+    showAddItemModal=(show)=>
     {
-        this.setState({showSingleModal: true})
+        return () => this.setState({showAddModal: show})
     }
-    closeSingleItemModal=()=>
+
+    getSingleNutrients=()=>
     {
-        this.setState({showSingleModal: false})
+        const menuSelection = this.state.selectedMenuItem
+        if (menuSelection === "")
+        {
+            return null
+        }
+        return this.state.foodData[parseInt(menuSelection)]
     }
-    showAddItemModal=()=>
+
+    updateFoodInfo=(data, isEdit)=>
     {
-        this.setState({showAddModal: true})
+        const name = data.name
+        const foodData = this.state.foodData
+
+        if (name === "")
+        {
+            return false
+        }
+
+        if (!isEdit && foodData.find(food => food.name === name) !== null)
+        {
+            return false
+        }
+
+        for (const nutrient of this.nutrientNames)
+        {
+            data[nutrient] = parseFloat(data[nutrient])
+            if (isNaN(data[nutrient]))
+            {
+                return false
+            }
+        }
+
+        const newData = {
+            id: isEdit ? data.id : foodData.length,
+            name: name,
+            category: this.state.groupSelection,
+            ...data
+        }
+        
+        if (isEdit)
+        {
+            foodData[data.id] = newData
+        }
+        else
+        {
+            foodData.push(newData)
+        }
+        
+        this.setState({foodData: foodData})
+        return true
     }
-    closeAddItemModal=()=>
-    {
-        this.setState({showAddModal: false})
-    }
+
     render()
     {
         return(
@@ -146,28 +193,33 @@ class Controls extends Component
                     <Dropdown isOpen={this.state.dropdownOpen} toggle={this.toggleDropdown}>
                         <DropdownToggle caret>Categories</DropdownToggle>
                         <DropdownMenu id="foodGroups">
-                            <DropdownItem onClick={this.updateMenu} value="proteins">Proteins</DropdownItem>
-                            <DropdownItem onClick={this.updateMenu} value="fruits">Fruits</DropdownItem>
-                            <DropdownItem onClick={this.updateMenu} value="vegetables">Vegetables</DropdownItem>
-                            <DropdownItem onClick={this.updateMenu} value="dairy">Dairy</DropdownItem>
-                            <DropdownItem onClick={this.updateMenu} value="grains">Grains</DropdownItem>
+                            <DropdownItem onClick={this.updateMenu} value="Proteins">Proteins</DropdownItem>
+                            <DropdownItem onClick={this.updateMenu} value="Fruits">Fruits</DropdownItem>
+                            <DropdownItem onClick={this.updateMenu} value="Vegetables">Vegetables</DropdownItem>
+                            <DropdownItem onClick={this.updateMenu} value="Dairy">Dairy</DropdownItem>
+                            <DropdownItem onClick={this.updateMenu} value="Grains">Grains</DropdownItem>
                         </DropdownMenu>
                     </Dropdown>
                 </Col>
                 <Col xs="12" md="5" lg="3" className="ptb">
                     <Card>
                         <CardHeader><h4 className="text-center">Menu Items</h4></CardHeader>
-                        <Input type="select" id="menuItems" size="5" value={this.state.selectedMenuItem} onChange={this.updateMenuSelection}>
-                            {this.state.menuItems.map(option => <option value={option} key={option}>{option}</option>)}
+                        <Input type="select" id="menuItems" size="5" value={this.state.selectedMenuItem}
+                                onChange={this.updateMenuSelection}>
+                            {this.state.menuItems.map(id => this.state.foodData[id])
+                                .map(option => <option value={option.id} key={option.id}>{option.name}</option>)}
                         </Input>
                         <ButtonGroup>
-                            <Button color="info" onClick={this.showSingleItemModal}>View Item</Button>
-                            <Button color="primary" onClick={this.showAddItemModal}>Add Item</Button>
-                            <Button color="secondary" onClick={this.showEditItemModal}>Edit Item</Button>
+                            <Button disabled={this.state.selectedMenuItem === ""} color="info" onClick={this.showSingleItemModal(true)}>View Item</Button>
+                            <Button color="primary" onClick={this.showAddItemModal(true)}>Add Item</Button>
+                            <Button disabled={this.state.selectedMenuItem === ""} color="secondary" onClick={this.showEditItemModal(true)}>Edit Item</Button>
                         </ButtonGroup>
-                        <IModalSingle cancel={this.closeSingleItemModal} showHide={this.state.showSingleModal}></IModalSingle>
-                        <ModalAdd callback={this.updateFoodInfo} cancel={this.closeAddItemModal} showHide={this.state.showAddModal}></ModalAdd>
-                        <FModal callback={this.updateFoodInfo} cancel={this.closeEditItemModal} showHide={this.state.showEditModal}></FModal>
+                        <NutrientsModal cancel={this.showSingleItemModal(false)} showHide={this.state.showSingleModal}
+                            data={this.getSingleNutrients()}></NutrientsModal>
+                        <EditFoodModal callback={this.updateFoodInfo} cancel={this.showAddItemModal(false)}
+                            showHide={this.state.showAddModal}></EditFoodModal>
+                        <EditFoodModal callback={this.updateFoodInfo} cancel={this.showEditItemModal(false)}
+                            showHide={this.state.showEditModal} data={this.getSingleNutrients()}></EditFoodModal>
                     </Card>
                 </Col>
                 <Col xs="12" md="2" lg="2" className="ptb">
@@ -178,12 +230,17 @@ class Controls extends Component
                 <Col xs="12" md="5" lg="5" className="ptb">
                     <Card>
                         <CardHeader><h4 className="text-center">Selected Items</h4></CardHeader>
-                        <Input type="select" id="selectedItems" size="5" value={this.state.selectedFoodId} onChange={this.updateFoodSelection}>
-                            {this.state.foodItems.map(option => <option value={option.value} key={option.value}>{option.text}</option>)}
+                        <Input type="select" id="selectedItems" size="5" value={this.state.foodSelection}
+                                onChange={this.updateFoodSelection}>
+                            {this.state.foodItems.map(option =>
+                                <option value={option.key} key={option.key}>
+                                    {this.state.foodData[option.id].name}
+                                </option>
+                            )}
                         </Input>
-                        <Button color="info" onClick={this.showTotItemModal}>View Total Item Info</Button>
-                        <IModalTot cancel={this.closeTotItemModal} showHide={this.state.showTotModal}></IModalTot>
-                        <Label className={this.state.foodItems.length === 0 ? "hidden" : ""} htmlFor="selectedItems">{`Total Calories: ${this.state.calorieTotal}`}</Label>
+                        <Button color="info" onClick={this.showTotItemModal(true)}>View Total Item Info</Button>
+                        <NutrientsModal cancel={this.showTotItemModal(false)} showHide={this.state.showTotModal}
+                            data={this.state.nutrientTotals}></NutrientsModal>
                     </Card>
                 </Col>
                 </Row>
@@ -196,7 +253,7 @@ class Controls extends Component
                                 <Input placeholder="2000" onChange={this.changeGoal}/>
                             </InputGroup>
                         </CardHeader>
-                            <Progress value={this.state.calorieTotal / this.state.calorieGoal * 100}/>
+                            <Progress value={this.state.nutrientTotals.calories / this.state.calorieGoal * 100}/>
                     </Card>
                     </Col>
                 </Row>
