@@ -1,7 +1,10 @@
 import React from 'react';
 import {Component} from 'react';
 import FModal from './FModal';
+import IModalTot from './IModalTot';
 import {Container, Row, Col, DropdownMenu, DropdownItem, DropdownToggle, Dropdown, Label, Input, Card, CardTitle, CardHeader, ButtonGroup, Button, Progress, Form, FormGroup, ModalHeader, ModalBody, ModalFooter, Modal, InputGroup, InputGroupText} from "reactstrap";
+import IModalSingle from './IModalSingle';
+import ModalAdd from './ModalAdd';
 
 require('react-dom');
 window.React2 = require('react');
@@ -29,7 +32,10 @@ class Controls extends Component
             calorieTotal: 0,
             dropdownOpen: false,
             calorieGoal: 2000,
-            showModal: false
+            showEditModal: false,
+            showTotModal: false,
+            showSingleModal: false,
+            showAddModal: false
         };
         this.nextFoodItemIndex = 0
     }
@@ -99,13 +105,37 @@ class Controls extends Component
 
     showEditItemModal=()=>
     {
-        this.setState({showModal: true})
+        this.setState({showEditModal: true})
     }
     closeEditItemModal=()=>
     {
-        this.setState({showModal: false})
+        this.setState({showEditModal: false})
     }
 
+    showTotItemModal=()=>
+    {
+        this.setState({showTotModal: true})
+    }
+    closeTotItemModal=()=>
+    {
+        this.setState({showTotModal: false})
+    }
+    showSingleItemModal=()=>
+    {
+        this.setState({showSingleModal: true})
+    }
+    closeSingleItemModal=()=>
+    {
+        this.setState({showSingleModal: false})
+    }
+    showAddItemModal=()=>
+    {
+        this.setState({showAddModal: true})
+    }
+    closeAddItemModal=()=>
+    {
+        this.setState({showAddModal: false})
+    }
     render()
     {
         return(
@@ -131,11 +161,13 @@ class Controls extends Component
                             {this.state.menuItems.map(option => <option value={option} key={option}>{option}</option>)}
                         </Input>
                         <ButtonGroup>
-                        <Button color="secondary" onClick={this.showItemInfoModal}>View Item Info</Button>
-                        <Button color="primary" onClick={this.showEditItemModal}>Edit Item Info</Button>
+                            <Button color="info" onClick={this.showSingleItemModal}>View Item</Button>
+                            <Button color="primary" onClick={this.showAddItemModal}>Add Item</Button>
+                            <Button color="secondary" onClick={this.showEditItemModal}>Edit Item</Button>
                         </ButtonGroup>
-                        <FModal callback={this.updateFoodInfo} cancel={this.closeEditItemModal} showHide={this.state.showModal}>
-                        </FModal>
+                        <IModalSingle cancel={this.closeSingleItemModal} showHide={this.state.showSingleModal}></IModalSingle>
+                        <ModalAdd callback={this.updateFoodInfo} cancel={this.closeAddItemModal} showHide={this.state.showAddModal}></ModalAdd>
+                        <FModal callback={this.updateFoodInfo} cancel={this.closeEditItemModal} showHide={this.state.showEditModal}></FModal>
                     </Card>
                 </Col>
                 <Col xs="12" md="2" lg="2" className="ptb">
@@ -149,7 +181,8 @@ class Controls extends Component
                         <Input type="select" id="selectedItems" size="5" value={this.state.selectedFoodId} onChange={this.updateFoodSelection}>
                             {this.state.foodItems.map(option => <option value={option.value} key={option.value}>{option.text}</option>)}
                         </Input>
-                        <Button onClick={this.showItemInfoModal}>View Total Item Info</Button>
+                        <Button color="info" onClick={this.showTotItemModal}>View Total Item Info</Button>
+                        <IModalTot cancel={this.closeTotItemModal} showHide={this.state.showTotModal}></IModalTot>
                         <Label className={this.state.foodItems.length === 0 ? "hidden" : ""} htmlFor="selectedItems">{`Total Calories: ${this.state.calorieTotal}`}</Label>
                     </Card>
                 </Col>
