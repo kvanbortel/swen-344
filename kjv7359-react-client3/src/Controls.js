@@ -50,8 +50,9 @@ class Controls extends Component
     {
         let foodItems = this.state.foodItems
 
-        // this is bad practice but ReactStrap doesn't fire onChange when the contents change the selection
-        let menuSelection = document.getElementById("menuItems").value
+        // this would work better with getElementByID since ReactStrap doesn't fire onChange
+        // when the contents change the selection, but I was advised to put it back without default selection
+        let menuSelection = this.state.selectedMenuItem
         if (menuSelection === "")
             return
         menuSelection = parseInt(menuSelection)
@@ -65,8 +66,9 @@ class Controls extends Component
         let state = {}
         let foodItems = this.state.foodItems
 
-        // this is bad practice but ReactStrap doesn't fire onChange when the contents change the selection
-        const foodSelection = document.getElementById("selectedItems").value
+        // this would work better with getElementByID since ReactStrap doesn't fire onChange
+        // when the contents change the selection, but I was advised to put it back without default selection
+        const foodSelection = this.state.foodSelection
         if (foodSelection === "")
             return
         const index = foodItems.findIndex(item => item.key === foodSelection)
@@ -123,13 +125,14 @@ class Controls extends Component
 
     getSingleNutrients=()=>
     {
-        // this is bad practice but ReactStrap doesn't fire onChange when the contents change the selection
-        const menuSelection = document.getElementById("menuItems")
-        if (menuSelection === null || menuSelection.value === "")
+        // this would work better with getElementByID since ReactStrap doesn't fire onChange
+        // when the contents change the selection, but I was advised to put it back without default selection
+        const menuSelection = this.state.selectedMenuItem
+        if (menuSelection === "")
         {
             return null
         }
-        return this.state.foodData[parseInt(menuSelection.value)]
+        return this.state.foodData[parseInt(menuSelection)]
     }
 
     updateFoodInfo=(data, isEdit)=>
