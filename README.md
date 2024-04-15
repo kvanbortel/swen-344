@@ -1,6 +1,8 @@
 # client-kjv7359
 
-Auto-generated student project
+Links:
+CLIENT-2:https://client-kjv7359-2235-swen-344-01-client-group-10-4c8a94095e8a261.git-pages.rit.edu/kjv7359-react-client2
+CLIENT-3:https://client-kjv7359-2235-swen-344-01-client-group-10-4c8a94095e8a261.git-pages.rit.edu/kjv7359-react-client3
 
 ## Getting started
 
