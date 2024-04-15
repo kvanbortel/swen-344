@@ -208,11 +208,11 @@ class Controls extends Component
                                 .map(option => <option value={option.id} key={option.id}>{option.name}</option>)}
                         </Input>
                         <ButtonGroup>
-                            <Button disabled={this.state.groupSelection === ""} color="info"
+                            <Button disabled={this.state.selectedMenuItem === ""} color="info"
                                 onClick={this.showSingleItemModal(true)}>View Item</Button>
-                            <Button disabled={this.state.groupSelection === ""} color="primary"
+                            <Button disabled={this.state.selectedMenuItem === ""} color="primary"
                                 onClick={this.showAddItemModal(true)}>Add Item</Button>
-                            <Button disabled={this.state.groupSelection === ""} color="secondary"
+                            <Button disabled={this.state.selectedMenuItem === ""} color="secondary"
                                 onClick={this.showEditItemModal(true)}>Edit Item</Button>
                         </ButtonGroup>
                         <NutrientsModal cancel={this.showSingleItemModal(false)} showHide={this.state.showSingleModal}
