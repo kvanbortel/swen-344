@@ -6,7 +6,7 @@ variables:
 
   PROJECT_NAME2: kjv7359-react-client2
 
-  PROJECT_NAME3: none  #e.g. kjv7359-react-client3.  Change to YOUR project 
+  PROJECT_NAME3: kjv7359-react-client3
 
   PROJECT_NAME4: none  #e.g. kjv7359-react-client4.  Change to YOUR project 
 
