@@ -1,0 +1,5 @@
+host: localhost
+database: swen344-nutrikit
+user: swen344
+password: football-proofing-amigo
+port: 5432

@@ -8,7 +8,7 @@ variables:
 
   PROJECT_NAME3: kjv7359-react-client3
 
-  PROJECT_NAME4: none  #e.g. kjv7359-react-client4.  Change to YOUR project 
+  PROJECT_NAME4: kjv7359-react-client4
 
   OUTPUT_DIR2: public/$PROJECT_NAME2
   OUTPUT_DIR3: public/$PROJECT_NAME3
