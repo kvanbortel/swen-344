@@ -6,11 +6,11 @@ CREATE TABLE foods (
     name            VARCHAR(30) NOT NULL,
     category_id     INTEGER NOT NULL,
     calories        INTEGER DEFAULT 0,
-    totalFat        DECIMAL DEFAULT 0,
-    saturatedFat    DECIMAL DEFAULT 0,
-    transFat        DECIMAL DEFAULT 0,
-    protein         DECIMAL DEFAULT 0,
-    carbohydrate    DECIMAL DEFAULT 0
+    totalFat        FLOAT DEFAULT 0,
+    saturatedFat    FLOAT DEFAULT 0,
+    transFat        FLOAT DEFAULT 0,
+    protein         FLOAT DEFAULT 0,
+    carbohydrate    FLOAT DEFAULT 0
 );
 
 CREATE TABLE categories (

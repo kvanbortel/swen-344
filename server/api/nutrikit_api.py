@@ -8,24 +8,8 @@ from .swen_344_db_utils import *
 
 class Foods(Resource):
     def get(self):
-        count = len(request.args)
-        if (count == 0):
-            result = exec_get_all("SELECT * FROM foods ORDER BY id ASC")
-            return result
-        else:
-            parser = reqparse.RequestParser()
-            parser.add_argument('category')
-            args = parser.parse_args()
-            sql = """
-                SELECT * FROM foods
-                WHERE category_id = (
-                    SELECT categories.id FROM categories
-                    WHERE categories.name = %s
-                    )
-                ORDER BY id ASC
-            """
-            result = exec_get_all(sql, (args['category']))
-            return result
+        result = exec_get_all("SELECT * FROM foods ORDER BY id ASC")
+        return result
 
     def post(self):
         parser = reqparse.RequestParser()

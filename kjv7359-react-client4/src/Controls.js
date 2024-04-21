@@ -185,17 +185,11 @@ class Controls extends Component
 
     processCategoriesContent = () =>
     {
-        if ((this.props.categoriesContent != null) && (this.props.categoriesContent.length > 0))
+        if ((this.props.categoriesContent !== null) && (this.props.categoriesContent.length > 0))
         {
-            //Syntax example of 'forEach' iterator
-        //    console.log(">>>>>>>>>Printing content")
-        //    this.props.categoriesContent.forEach(element => {
-        //        console.log("Element:" + element);
-        //    });
-        //    console.log(">>>>>>>>>>Done")
             return(
                     this.props.categoriesContent.map(item => 
-                        <DropdownItem onClick={this.updateMenu} value={item[1]}>{item[1]}</DropdownItem>
+                        <DropdownItem onClick={this.updateMenu} key={item[0]} value={item[1]}>{item[1]}</DropdownItem>
                     )
             )
         }
@@ -206,28 +200,29 @@ class Controls extends Component
         }
     }
 
-    processFoodContent = (groupSelection) =>
+    processFoodContent = () =>
     {
-        if ((this.props.foodsByCategoryContent(groupSelection) != null) &&
-            (this.props.foodsByCategoryContent(groupSelection).length > 0))
+        if ((this.props.foodContent !== null) && (this.props.foodContent.length > 0))
         {
-            return(
-                    this.props.foodsByCategoryContent(groupSelection).map(item => 
-                        <Input type="select" id="menuItems" size="5" value={this.state.selectedMenuItem}
-                                onChange={this.updateMenuSelection}>
+            if (this.state.groupSelection !== "")
+            {
+                return(
+                        this.props.foodContent.filter(food => food[2] ===
+                                                ((this.props.categoriesContent
+                                                    .filter(category => category[1] === this.state.groupSelection))[0][0])
+                                                )
+                                                .map(item =>
                             <option value={item[0]} key={item[0]}>{item[1]}</option>
-                        </Input>
-                    )
-            )
+                        )
+                )
+            }
         }
         else
         {
             console.log("Empty content");
-            return (<div>No content</div>)
+            return (<option key="">No content</option>)
         }
     }
-
-
 
 
 
@@ -249,7 +244,10 @@ class Controls extends Component
                 <Col xs="12" md="5" lg="3" className="ptb">
                     <Card>
                         <CardHeader><h4 className="text-center">Menu Items</h4></CardHeader>
-                            {this.processFoodContent(this.state.groupSelection)}
+                        <Input type="select" id="menuItems" size="5" value={this.state.selectedMenuItem}
+                                onChange={this.updateMenuSelection}>
+                            {this.processFoodContent()}
+                        </Input>
                         <ButtonGroup>
                             <Button disabled={this.state.selectedMenuItem === ""} color="info"
                                 onClick={this.showSingleItemModal(true)}>View Item</Button>

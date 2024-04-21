@@ -10,7 +10,6 @@ class Page extends Component
         this.state = {
             foods: [],
             categories: [],
-            foodsByCategory: [],
         }
     }
 
@@ -20,10 +19,6 @@ class Page extends Component
 
     updateFoods = (apiResponse) => {
         this.setState({foods: apiResponse})
-    }
-
-    updateFoodsByCategory = (apiResponse) => {
-        this.setState({foodsbyCategory: apiResponse})
     }
 
     fetchFoods = () => {
@@ -49,33 +44,6 @@ class Page extends Component
             {   
                 console.log(error)
                 this.updateFoods("")
-            }
-        )
-    }
-
-    fetchFoodsByCategory = (category) => {
-        fetch('http://localhost:5000/foods?category=' + encodeURIComponent(category))
-        .then(
-            (response) => 
-            {
-                if (response.status === 200)
-                   return (response.json())
-                else
-                {
-                    console.log("HTTP error:" + response.status + ":" +  response.statusText)
-                    return ([["status ", response.status]])
-                }
-            }
-        ) //The promise response is returned, then we extract the json data
-        .then ((jsonOutput) => //jsonOutput now has result of the data extraction
-            {
-                this.updateFoodsByCategory(jsonOutput)
-            }
-        )
-        .catch((error) => 
-            {   
-                console.log(error)
-                this.updateFoodsByCategory("")
             }
         )
     }
@@ -203,7 +171,6 @@ class Page extends Component
             <div>
                 <Headings />
                 <Controls categoriesContent={this.state.categories}
-                          foodsByCategoryContent={this.state.foodsByCategory}
                           foodContent={this.state.foods} newFoodContent={this.addFood} editedFoodCallback={this.editFood}
                 />
             </div>
