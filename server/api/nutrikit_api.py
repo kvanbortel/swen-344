@@ -6,8 +6,77 @@ import json
 from .swen_344_db_utils import *
 
 
-class NutrikitApi(Resource):
+class Foods(Resource):
     def get(self):
-        # NOTE: No need to replicate code; use the util function!
-        result = exec_get_all("SELECT * FROM food")
+        count = len(request.args)
+        if (count == 0):
+            result = exec_get_all("SELECT * FROM foods ORDER BY id ASC")
+            return result
+        else:
+            parser = reqparse.RequestParser()
+            parser.add_argument('category')
+            args = parser.parse_args()
+            sql = """
+                SELECT * FROM foods
+                WHERE category_id = (
+                    SELECT categories.id FROM categories
+                    WHERE categories.name = %s
+                    )
+                ORDER BY id ASC
+            """
+            result = exec_get_all(sql, (args['category']))
+            return result
+
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('name')
+        parser.add_argument('category')
+        parser.add_argument('calories')
+        parser.add_argument('totalFat')
+        parser.add_argument('saturatedFat')
+        parser.add_argument('transFat')
+        parser.add_argument('protein')
+        parser.add_argument('carbohydrate')
+        args = parser.parse_args()
+        sql = """
+            INSERT INTO foods (name, category_id, calories, totalFat, saturatedFat, transFat, protein, carbohydrate)
+            VALUES(
+                %s,
+                (SELECT categories.id FROM categories
+                    WHERE categories.name = %s),
+                %s, %s, %s, %s, %s, %s, %s)
+        """
+        result = exec_commit(sql, (args['name'], args['category'], args['calories'], args['totalFat'],
+                                   args['saturatedFat'], args['transFat'], args['protein'], args['carbohydrate']))
+        return result
+
+    def put(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('id')
+        parser.add_argument('name')
+        parser.add_argument('category')
+        parser.add_argument('calories')
+        parser.add_argument('totalFat')
+        parser.add_argument('saturatedFat')
+        parser.add_argument('transFat')
+        parser.add_argument('protein')
+        parser.add_argument('carbohydrate')
+        args = parser.parse_args()
+        sql = """
+            UPDATE foods SET name=%s,
+            categorory=(
+                SELECT categories.id FROM categories
+                WHERE categories.name = %s),
+            calories=%s, totalFat=%s, saturatedFat=%s, transFat=%s, protein=%s, carbohydrate=%s
+            WHERE id=%s
+        """
+        result = exec_commit(sql, (args['name'], args['category'], args['calories'], args['totalFat'],
+                                   args['saturatedFat'], args['transFat'], args['protein'], args['carbohydrate'],
+                                   args['id']))
+        return result
+
+
+class Categories(Resource):
+    def get(self):
+        result = exec_get_all("SELECT * FROM categories ORDER BY id ASC")
         return result

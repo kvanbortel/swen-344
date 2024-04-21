@@ -10,17 +10,17 @@ CREATE TABLE foods (
     saturatedFat    DECIMAL DEFAULT 0,
     transFat        DECIMAL DEFAULT 0,
     protein         DECIMAL DEFAULT 0,
-    carbohydrate    DECIMAL DEFAULT 0,
+    carbohydrate    DECIMAL DEFAULT 0
 );
 
-CREATE TABLE categories {
+CREATE TABLE categories (
     id      SERIAL PRIMARY KEY NOT NULL,
-    name    VARCHAR(30) NOT NULL,
-}
+    name    VARCHAR(30) NOT NULL
+);
 
 INSERT INTO categories(name) VALUES
     ('Proteins'),
-    ('Fruits').
+    ('Fruits'),
     ('Vegetables'),
     ('Dairy'),
     ('Grains');
@@ -33,7 +33,7 @@ INSERT INTO foods(name, category_id, calories, totalFat, saturatedFat, transFat,
     ('soy',             1,  50,     19.94,  2.884,  0.0,    36.49,  30.16),
     ('orange',          2,  300,    0.12,   0.0,    0.0,    0.94,   11.75),
     ('banana',          2,  200,    0.33,   0.0,    0.0,    1.09,   22.84),
-    ('pineapple',       2   100,    0.12,   0.0,    0.0,    0.54,   13.12),
+    ('pineapple',       2,  100,    0.12,   0.0,    0.0,    0.54,   13.12),
     ('grapes',          2,  80,     0.16,   0.0,    0.0,    0.72,   18.1),
     ('blueberries',     2,  50,     0.33,   0.0,    0.0,    0.74,   14.49),
     ('romaine',         3,  30,     0.3,    0.0,    0.0,    1.2,    3.3),

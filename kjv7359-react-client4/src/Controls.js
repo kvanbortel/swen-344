@@ -1,10 +1,10 @@
 import React from 'react';
 import {Component} from 'react';
-import NutrientsModal from './NutrientsModal';
+import NutrientsModal from '../../kjv7359-react-client4/src/NutrientsModal';
 import {Container, Row, Col, DropdownMenu, DropdownItem, DropdownToggle, Dropdown, Input, Card, CardHeader,
         ButtonGroup, Button, Progress, InputGroup, InputGroupText} from "reactstrap";
-import EditFoodModal from './EditFoodModal';
-import baseFoodData from './foods.json';
+import EditFoodModal from '../../kjv7359-react-client4/src/EditFoodModal';
+import baseFoodData from '../../kjv7359-react-client4/src/foods.json';
 
 class Controls extends Component
 {
@@ -180,6 +180,57 @@ class Controls extends Component
         return true
     }
 
+
+
+
+    processCategoriesContent = () =>
+    {
+        if ((this.props.categoriesContent != null) && (this.props.categoriesContent.length > 0))
+        {
+            //Syntax example of 'forEach' iterator
+        //    console.log(">>>>>>>>>Printing content")
+        //    this.props.categoriesContent.forEach(element => {
+        //        console.log("Element:" + element);
+        //    });
+        //    console.log(">>>>>>>>>>Done")
+            return(
+                    this.props.categoriesContent.map(item => 
+                        <DropdownItem onClick={this.updateMenu} value={item[1]}>{item[1]}</DropdownItem>
+                    )
+            )
+        }
+        else
+        {
+            console.log("Empty content");
+            return (<DropdownItem>No content</DropdownItem>)
+        }
+    }
+
+    processFoodContent = (groupSelection) =>
+    {
+        if ((this.props.foodsByCategoryContent(groupSelection) != null) &&
+            (this.props.foodsByCategoryContent(groupSelection).length > 0))
+        {
+            return(
+                    this.props.foodsByCategoryContent(groupSelection).map(item => 
+                        <Input type="select" id="menuItems" size="5" value={this.state.selectedMenuItem}
+                                onChange={this.updateMenuSelection}>
+                            <option value={item[0]} key={item[0]}>{item[1]}</option>
+                        </Input>
+                    )
+            )
+        }
+        else
+        {
+            console.log("Empty content");
+            return (<div>No content</div>)
+        }
+    }
+
+
+
+
+
     render()
     {
         const nutrientTotals = this.getNutrientTotals()
@@ -191,22 +242,14 @@ class Controls extends Component
                     <Dropdown isOpen={this.state.dropdownOpen} toggle={this.toggleDropdown}>
                         <DropdownToggle caret>Categories</DropdownToggle>
                         <DropdownMenu id="foodGroups">
-                            <DropdownItem onClick={this.updateMenu} value="Proteins">Proteins</DropdownItem>
-                            <DropdownItem onClick={this.updateMenu} value="Fruits">Fruits</DropdownItem>
-                            <DropdownItem onClick={this.updateMenu} value="Vegetables">Vegetables</DropdownItem>
-                            <DropdownItem onClick={this.updateMenu} value="Dairy">Dairy</DropdownItem>
-                            <DropdownItem onClick={this.updateMenu} value="Grains">Grains</DropdownItem>
+                            {this.processCategoriesContent()}
                         </DropdownMenu>
                     </Dropdown>
                 </Col>
                 <Col xs="12" md="5" lg="3" className="ptb">
                     <Card>
                         <CardHeader><h4 className="text-center">Menu Items</h4></CardHeader>
-                        <Input type="select" id="menuItems" size="5" value={this.state.selectedMenuItem}
-                                onChange={this.updateMenuSelection}>
-                            {this.state.foodData.filter(food => food.category === this.state.groupSelection)
-                                .map(option => <option value={option.id} key={option.id}>{option.name}</option>)}
-                        </Input>
+                            {this.processFoodContent(this.state.groupSelection)}
                         <ButtonGroup>
                             <Button disabled={this.state.selectedMenuItem === ""} color="info"
                                 onClick={this.showSingleItemModal(true)}>View Item</Button>
