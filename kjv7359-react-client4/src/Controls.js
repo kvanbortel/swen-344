@@ -4,7 +4,6 @@ import NutrientsModal from '../../kjv7359-react-client4/src/NutrientsModal';
 import {Container, Row, Col, DropdownMenu, DropdownItem, DropdownToggle, Dropdown, Input, Card, CardHeader,
         ButtonGroup, Button, Progress, InputGroup, InputGroupText} from "reactstrap";
 import EditFoodModal from '../../kjv7359-react-client4/src/EditFoodModal';
-import baseFoodData from '../../kjv7359-react-client4/src/foods.json';
 
 class Controls extends Component
 {
@@ -23,11 +22,15 @@ class Controls extends Component
             showTotModal: false,
             showSingleModal: false,
             showAddModal: false,
-            foodData: baseFoodData
         }
         this.nextFoodItemIndex = 0
     }
     
+    getFoodById=(id)=>
+    {
+        return this.props.foods.find(food => food.id === id)
+    }
+
     updateMenu=(e)=>
     {
         this.setState({groupSelection: e.target.value})
@@ -87,12 +90,14 @@ class Controls extends Component
     getNutrientTotals=()=>
     {
         const nutrientTotals = Object.fromEntries(this.nutrientNames.map(name => [name, 0]))
+        if (this.props.foods === null || this.props.foods.length === 0)
+            return nutrientTotals
         let foodItems = this.state.foodItems
         for(const item of foodItems)
         {
             for (const name of this.nutrientNames)
             {
-                nutrientTotals[name] += this.state.foodData[item.id][name]
+                nutrientTotals[name] += this.getFoodById(item.id)[name]
             }
         }
         return nutrientTotals
@@ -132,7 +137,7 @@ class Controls extends Component
         {
             return null
         }
-        return this.state.foodData[parseInt(menuSelection)]
+        return this.getFoodById(parseInt(menuSelection))
     }
 
     updateFoodInfo=(data, isEdit)=>
@@ -181,47 +186,37 @@ class Controls extends Component
     }
 
 
-
-
-    processCategoriesContent = () =>
+    processCategories = () =>
     {
-        if ((this.props.categoriesContent !== null) && (this.props.categoriesContent.length > 0))
-        {
-            return(
-                    this.props.categoriesContent.map(item => 
-                        <DropdownItem onClick={this.updateMenu} key={item[0]} value={item[1]}>{item[1]}</DropdownItem>
-                    )
-            )
-        }
-        else
+        if (this.props.categories === null)
         {
             console.log("Empty content");
             return (<DropdownItem>No content</DropdownItem>)
         }
+        return(
+            this.props.categories.map(cat => 
+                <DropdownItem onClick={this.updateMenu} key={cat.id} value={cat.id}>{cat.name}</DropdownItem>
+            )
+        )
     }
 
-    processFoodContent = () =>
+    processFoods = () =>
     {
-        if ((this.props.foodContent !== null) && (this.props.foodContent.length > 0))
-        {
-            if (this.state.groupSelection !== "")
-            {
-                return(
-                        this.props.foodContent.filter(food => food[2] ===
-                                                ((this.props.categoriesContent
-                                                    .filter(category => category[1] === this.state.groupSelection))[0][0])
-                                                )
-                                                .map(item =>
-                            <option value={item[0]} key={item[0]}>{item[1]}</option>
-                        )
-                )
-            }
-        }
-        else
+        if (this.props.foods === null)
         {
             console.log("Empty content");
             return (<option key="">No content</option>)
         }
+        if (this.state.groupSelection === "")
+        {
+            return null
+        }
+        const category_id = parseInt(this.state.groupSelection)
+        return(
+            this.props.foods.filter(food => food.category_id === category_id).map(food =>
+                <option value={food.id} key={food.id}>{food.name}</option>
+            )
+        )
     }
 
 
@@ -237,7 +232,7 @@ class Controls extends Component
                     <Dropdown isOpen={this.state.dropdownOpen} toggle={this.toggleDropdown}>
                         <DropdownToggle caret>Categories</DropdownToggle>
                         <DropdownMenu id="foodGroups">
-                            {this.processCategoriesContent()}
+                            {this.processCategories()}
                         </DropdownMenu>
                     </Dropdown>
                 </Col>
@@ -246,7 +241,7 @@ class Controls extends Component
                         <CardHeader><h4 className="text-center">Menu Items</h4></CardHeader>
                         <Input type="select" id="menuItems" size="5" value={this.state.selectedMenuItem}
                                 onChange={this.updateMenuSelection}>
-                            {this.processFoodContent()}
+                            {this.processFoods()}
                         </Input>
                         <ButtonGroup>
                             <Button disabled={this.state.selectedMenuItem === ""} color="info"
@@ -276,7 +271,7 @@ class Controls extends Component
                                 onChange={this.updateFoodSelection}>
                             {this.state.foodItems.map(option =>
                                 <option value={option.key} key={option.key}>
-                                    {this.state.foodData[option.id].name}
+                                    {this.getFoodById(option.id).name}
                                 </option>
                             )}
                         </Input>

@@ -2,6 +2,8 @@ import { Component } from "react";
 import Headings  from "../../kjv7359-react-client4/src/Headings";
 import Controls from './Controls';
 
+const baseURL = 'http://localhost:5000'
+
 class Page extends Component
 {
     constructor(props)
@@ -13,45 +15,28 @@ class Page extends Component
         }
     }
 
-    updateCategories = (apiResonse) => {
-        this.setState({categories: apiResonse})
-    }
-
-    updateFoods = (apiResponse) => {
-        this.setState({foods: apiResponse})
+    handleResponse = (promise, callback) => {
+        promise.then(response => {
+            if (response.status === 200)
+                response.json().then(callback)
+            else
+                console.log("HTTP error:" + response.status + ":" +  response.statusText)
+        })
+        .catch((error) => {   
+            console.log(error)
+        })
     }
 
     fetchFoods = () => {
-        fetch('http://localhost:5000/foods')
-        .then(
-            (response) => 
-            {
-                if (response.status === 200)
-                   return (response.json())
-                else
-                {
-                    console.log("HTTP error:" + response.status + ":" +  response.statusText)
-                    return ([["status ", response.status]])
-                }
-            }
-        ) //The promise response is returned, then we extract the json data
-        .then ((jsonOutput) => //jsonOutput now has result of the data extraction
-            {
-                this.updateFoods(jsonOutput)
-            }
-        )
-        .catch((error) => 
-            {   
-                console.log(error)
-                this.updateFoods("")
-            }
-        )
+        let url = baseURL + '/foods'
+        const promise = fetch(url)
+        this.handleResponse(promise, apiResponse => this.setState({foods: apiResponse}))
     }
 
     // TODO: make category_id work
     addFood = (name, category_id, calories, totalFat, saturatedFat, transFat, protein, carbohydrate)=>
     {
-        let url = 'http://localhost:5000/foods'
+        let url = baseURL + '/foods'
         let jData = JSON.stringify({
             name: name,
             category_id: category_id,
@@ -62,37 +47,18 @@ class Page extends Component
             protein: protein,
             carbohydrate: carbohydrate,
             })
-        fetch(url,
+        const promise = fetch(url,
             {
                 method: 'POST',
                 body: jData,
                 headers: {"Content-type": "application/json; charset=UTF-8"}        
             })
-        .then(
-            (response) => 
-            {
-                if (response.status === 200)
-                    return (response.json())
-                else
-                    return ([ ["status ", response.status]])
-            }
-        )//The promise response is returned, then we extract the json data
-        .then ((jsonOutput) => //jsonOutput now has result of the data extraction, but don't need it in this case
-            {
-                this.fetchFoods()
-            }
-        )
-        .catch((error) => 
-            {
-                console.log(error)
-                this.fetchFoods()
-            }
-        )
+        this.handleResponse(promise, response => this.fetchFoods({}))
     }
 
     editFood = (id, name, category_id, calories, totalFat, saturatedFat, transFat, protein, carbohydrate)=>
     {
-        let url = 'https://localhost:5000/foods'
+        let url = baseURL + '/foods'
         let jData = JSON.stringify({
             id: id,
             name: name,
@@ -104,59 +70,21 @@ class Page extends Component
             protein: protein,
             carbohydrate: carbohydrate,
         })
-        fetch(url,
+        const promise = fetch(url,
             {
                 method: 'PUT',
                 body: jData,
                 headers: {"Content-type": "application/json; charset=UTF-8"}
             })
-        .then(
-            (response) =>
-            {
-                if(response.status === 200)
-                    return (response.json())
-                else
-                    return ([["status ", response.status]])
-            }
-        )
-        .then((jsonOutput) =>
-            {
-                this.fetchFoods()
-            }
-        )
-        .catch((error) =>
-            {
-                console.log(error)
-                this.fetchFoods()
-            }
-        )
+        this.handleResponse(promise, response => this.fetchFoods())
     }
 
     fetchCategories = () => {
-        fetch('http://localhost:5000/categories')
-        .then(
-            (response) => 
-            {
-                if (response.status === 200)
-                   return (response.json())
-                else
-                {
-                    console.log("HTTP error:" + response.status + ":" +  response.statusText)
-                    return ([["status ", response.status]])
-                }
-            }
-        ) //The promise response is returned, then we extract the json data
-        .then ((jsonOutput) => //jsonOutput now has result of the data extraction
-            {
-                this.updateCategories(jsonOutput)
-            }
-        )
-        .catch((error) => 
-            {   
-                console.log(error)
-                this.updateCategories("")
-            }
-        )
+        let url = baseURL + '/categories'
+        const promise = fetch(url)
+        this.handleResponse(promise, apiResponse => {
+            this.setState({categories: apiResponse})
+        })
     }
 
     componentDidMount()
@@ -170,8 +98,9 @@ class Page extends Component
         return(
             <div>
                 <Headings />
-                <Controls categoriesContent={this.state.categories}
-                          foodContent={this.state.foods} newFoodContent={this.addFood} editedFoodCallback={this.editFood}
+                <Controls categories={this.state.categories}
+                          foods={this.state.foods}
+                          addFood={this.addFood} editFood={this.editFood}
                 />
             </div>
         )

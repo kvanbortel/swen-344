@@ -9,7 +9,8 @@ from .swen_344_db_utils import *
 class Foods(Resource):
     def get(self):
         result = exec_get_all("SELECT * FROM foods ORDER BY id ASC")
-        return result
+        keys = ['id', 'name', 'category_id', 'calories', 'totalFat', 'saturatedFat', 'transFat', 'protein', 'carbohydrate']
+        return [dict(zip(keys, element)) for element in result]
 
     def post(self):
         parser = reqparse.RequestParser()
@@ -63,4 +64,5 @@ class Foods(Resource):
 class Categories(Resource):
     def get(self):
         result = exec_get_all("SELECT * FROM categories ORDER BY id ASC")
-        return result
+        keys = ['id', 'name']
+        return [dict(zip(keys, element)) for element in result]
