@@ -57,8 +57,6 @@ class Controls extends Component
     {
         let foodItems = this.state.foodItems
 
-        // this would work better with getElementByID since ReactStrap doesn't fire onChange
-        // when the contents change the selection, but I was advised to put it back without default selection
         let menuSelection = this.state.selectedMenuItem
         if (menuSelection === null)
             return
@@ -72,8 +70,6 @@ class Controls extends Component
         let state = {}
         let foodItems = this.state.foodItems
 
-        // this would work better with getElementByID since ReactStrap doesn't fire onChange
-        // when the contents change the selection, but I was advised to put it back without default selection
         const foodSelection = this.state.foodSelection
         if (foodSelection === "")
             return
@@ -138,8 +134,6 @@ class Controls extends Component
 
     getSingleNutrients = () =>
     {
-        // this would work better with getElementByID since ReactStrap doesn't fire onChange
-        // when the contents change the selection, but I was advised to put it back without default selection
         const menuSelection = this.state.selectedMenuItem
         return menuSelection === null ? null : this.getFoodById(menuSelection)
     }
