@@ -185,7 +185,7 @@ class Controls extends Component
             food => food.category_id === this.state.groupSelection)
         const newMenuSelection = firstMenuMatch === undefined ? null : firstMenuMatch.id
         const newFoodSelection = foodItems.length === 0 ? "" : foodItems[0].key
-        this.setState({selectedMenuItem: newMenuSelection, newFoodSelection: newFoodSelection, foodItems: foodItems})
+        this.setState({selectedMenuItem: newMenuSelection, foodSelection: newFoodSelection, foodItems: foodItems})
     }
 
     deleteItem = () =>
