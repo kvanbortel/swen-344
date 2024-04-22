@@ -1,9 +1,9 @@
-import React from 'react';
-import {Component} from 'react';
-import NutrientsModal from '../../kjv7359-react-client4/src/NutrientsModal';
+import React from 'react'
+import {Component} from 'react'
+import NutrientsModal from '../../kjv7359-react-client4/src/NutrientsModal'
 import {Container, Row, Col, DropdownMenu, DropdownItem, DropdownToggle, Dropdown, Input, Card, CardHeader,
-        ButtonGroup, Button, Progress, InputGroup, InputGroupText} from "reactstrap";
-import EditFoodModal from '../../kjv7359-react-client4/src/EditFoodModal';
+        ButtonGroup, Button, Progress, InputGroup, InputGroupText} from "reactstrap"
+import EditFoodModal from '../../kjv7359-react-client4/src/EditFoodModal'
 
 class Controls extends Component
 {
@@ -26,30 +26,30 @@ class Controls extends Component
         this.nextFoodItemIndex = 0
     }
     
-    getFoodById=(id)=>
+    getFoodById = (id) =>
     {
         return this.props.foods.find(food => food.id === id)
     }
 
-    updateMenu=(e)=>
+    updateMenu = (e) =>
     {
         this.setState({groupSelection: e.target.value})
     }
-    toggleDropdown=()=>
+    toggleDropdown = () =>
     {
         this.setState({dropdownOpen: !this.state.dropdownOpen})
     }
 
-    updateMenuSelection=(e)=>
+    updateMenuSelection = (e) =>
     {
         this.setState({selectedMenuItem: e.target.value})
     }
-    updateFoodSelection=(e)=>
+    updateFoodSelection = (e) =>
     {
         this.setState({foodSelection: e.target.value})
     }
 
-    addSelection=()=>
+    addSelection = () =>
     {
         let foodItems = this.state.foodItems
 
@@ -64,7 +64,7 @@ class Controls extends Component
 
         this.setState({foodItems: foodItems})
     }
-    removeSelection=()=>
+    removeSelection = () =>
     {
         let state = {}
         let foodItems = this.state.foodItems
@@ -87,7 +87,7 @@ class Controls extends Component
         this.setState({...state, foodItems: foodItems})
     }
 
-    getNutrientTotals=()=>
+    getNutrientTotals = () =>
     {
         const nutrientTotals = Object.fromEntries(this.nutrientNames.map(name => [name, 0]))
         if (this.props.foods === null || this.props.foods.length === 0)
@@ -103,32 +103,32 @@ class Controls extends Component
         return nutrientTotals
     }
 
-    changeGoal=(e)=>
+    changeGoal = (e) =>
     {
         this.setState({calorieGoal: e.target.value})
     }
 
-    showEditItemModal=(show)=>
+    showEditItemModal = (show) =>
     {
         return () => this.setState({showEditModal: show})
     }
 
-    showTotItemModal=(show)=>
+    showTotItemModal = (show) =>
     {
         return () => this.setState({showTotModal: show})
     }
 
-    showSingleItemModal=(show)=>
+    showSingleItemModal = (show) =>
     {
         return () => this.setState({showSingleModal: show})
     }
 
-    showAddItemModal=(show)=>
+    showAddItemModal = (show) =>
     {
         return () => this.setState({showAddModal: show})
     }
 
-    getSingleNutrients=()=>
+    getSingleNutrients = () =>
     {
         // this would work better with getElementByID since ReactStrap doesn't fire onChange
         // when the contents change the selection, but I was advised to put it back without default selection
@@ -140,7 +140,7 @@ class Controls extends Component
         return this.getFoodById(parseInt(menuSelection))
     }
 
-    updateFoodInfo=(data, isEdit)=>
+    updateFoodInfo = (data, isEdit) =>
     {
         data = Object.assign({}, data)
 
@@ -178,7 +178,7 @@ class Controls extends Component
     {
         if (this.props.categories === null)
         {
-            console.log("Empty content");
+            console.log("Empty content")
             return (<DropdownItem>No content</DropdownItem>)
         }
         return(
@@ -192,7 +192,7 @@ class Controls extends Component
     {
         if (this.props.foods === null)
         {
-            console.log("Empty content");
+            console.log("Empty content")
             return (<option key="">No content</option>)
         }
         if (this.state.groupSelection === "")
@@ -287,6 +287,6 @@ class Controls extends Component
         </div>
         )
     }
-} 
+}
 
-export default Controls;
+export default Controls

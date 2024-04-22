@@ -1,6 +1,6 @@
-import { Component } from "react";
-import Headings  from "../../kjv7359-react-client4/src/Headings";
-import Controls from './Controls';
+import { Component } from "react"
+import Headings  from "../../kjv7359-react-client4/src/Headings"
+import Controls from './Controls'
 
 const baseURL = 'http://localhost:5000'
 
@@ -33,7 +33,7 @@ class Page extends Component
         this.handleResponse(promise, apiResponse => this.setState({foods: apiResponse}))
     }
 
-    addFood = (params)=> // name, category_id, calories, totalFat, saturatedFat, transFat, protein, carbohydrate
+    addFood = (params) => // name, category_id, calories, totalFat, saturatedFat, transFat, protein, carbohydrate
     {
         const promise = fetch(baseURL + '/foods',
             {
@@ -44,7 +44,7 @@ class Page extends Component
         this.handleResponse(promise, response => this.fetchFoods())
     }
 
-    editFood = (params)=> // id, category_id, calories, totalFat, saturatedFat, transFat, protein, carbohydrate
+    editFood = (params) => // id, category_id, calories, totalFat, saturatedFat, transFat, protein, carbohydrate
     {
         const promise = fetch(baseURL + '/foods',
             {
@@ -71,7 +71,7 @@ class Page extends Component
 
     render()
     {
-        return(
+        return (
             <div>
                 <Headings />
                 <Controls categories={this.state.categories}
@@ -82,4 +82,4 @@ class Page extends Component
         )
     }
 }
-export default Page;
+export default Page

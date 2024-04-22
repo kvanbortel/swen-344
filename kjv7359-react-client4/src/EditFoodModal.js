@@ -1,25 +1,25 @@
-import React from 'react';
-import {Component} from 'react';
-import {Modal, ModalHeader, ModalBody, ModalFooter, Button, InputGroup, Input, InputGroupText} from 'reactstrap';
+import React from 'react'
+import {Component} from 'react'
+import {Modal, ModalHeader, ModalBody, ModalFooter, Button, InputGroup, Input, InputGroupText} from 'reactstrap'
 
 class EditFoodModal extends Component
 {
     constructor(props)
     {
-        super(props);
+        super(props)
         this.isEdit = "data" in props
         this.state = {
             data: {}
-        };
+        }
     }
     close = () =>
     {
-        this.props.cancel();
+        this.props.cancel()
     }
 
     saveChanges = () =>
     {
-        const result = this.props.callback(this.state.data, this.isEdit);
+        const result = this.props.callback(this.state.data, this.isEdit)
         
         if (result)
         {
@@ -27,7 +27,7 @@ class EditFoodModal extends Component
         }
     }
 
-    handleOpened=()=>
+    handleOpened = () =>
     {
         this.setState({
             data: this.isEdit ? Object.assign({}, this.props.data) :
@@ -35,7 +35,7 @@ class EditFoodModal extends Component
         })
     }
 
-    updateFoodInfo=(name)=>
+    updateFoodInfo = (name) =>
     {
         return e =>
         {
@@ -47,48 +47,47 @@ class EditFoodModal extends Component
 
     render()
     {
-  
-    return(
-        <Modal isOpen={this.props.showHide} toggle={this.close} onOpened={this.handleOpened}>
-        <ModalHeader toggle={this.close}>{this.state.data.name}</ModalHeader>
-        <ModalBody>
-            <InputGroup>
-                <InputGroupText>Name</InputGroupText>
-                <Input disabled={this.isEdit} placeholder={this.state.data.name} onChange={this.updateFoodInfo("name")}/>
-            </InputGroup>
-            <InputGroup>
-                <InputGroupText>Calories</InputGroupText>
-                <Input placeholder={this.state.data.calories} onChange={this.updateFoodInfo("calories")}/>
-            </InputGroup>
-            <InputGroup>
-                <InputGroupText>Total Fat</InputGroupText>
-                <Input placeholder={this.state.data.totalFat} onChange={this.updateFoodInfo("totalFat")}/>
-            </InputGroup>
-            <InputGroup>
-                <InputGroupText>Saturated Fat</InputGroupText>
-                <Input placeholder={this.state.data.saturatedFat} onChange={this.updateFoodInfo("saturatedFat")}/>
-            </InputGroup>
-            <InputGroup>
-                <InputGroupText>Trans Fat</InputGroupText>
-                <Input placeholder={this.state.data.transFat} onChange={this.updateFoodInfo("transFat")}/>
-            </InputGroup>
-            <InputGroup>
-                <InputGroupText>Protein</InputGroupText>
-                <Input placeholder={this.state.data.protein} onChange={this.updateFoodInfo("protein")}/>
-            </InputGroup>
-            <InputGroup>
-                <InputGroupText>Carbohydrate</InputGroupText>
-                <Input placeholder={this.state.data.carbohydrate} onChange={this.updateFoodInfo("carbohydrate")}/>
-            </InputGroup>
-        </ModalBody>
-        <ModalFooter>
-            <Button color="primary" onClick={this.saveChanges}>Save</Button>
-            <Button color="secondary" onClick={this.close}>Cancel</Button>
-        </ModalFooter>
+        return (
+            <Modal isOpen={this.props.showHide} toggle={this.close} onOpened={this.handleOpened}>
+            <ModalHeader toggle={this.close}>{this.state.data.name}</ModalHeader>
+            <ModalBody>
+                <InputGroup>
+                    <InputGroupText>Name</InputGroupText>
+                    <Input disabled={this.isEdit} placeholder={this.state.data.name} onChange={this.updateFoodInfo("name")}/>
+                </InputGroup>
+                <InputGroup>
+                    <InputGroupText>Calories</InputGroupText>
+                    <Input placeholder={this.state.data.calories} onChange={this.updateFoodInfo("calories")}/>
+                </InputGroup>
+                <InputGroup>
+                    <InputGroupText>Total Fat</InputGroupText>
+                    <Input placeholder={this.state.data.totalFat} onChange={this.updateFoodInfo("totalFat")}/>
+                </InputGroup>
+                <InputGroup>
+                    <InputGroupText>Saturated Fat</InputGroupText>
+                    <Input placeholder={this.state.data.saturatedFat} onChange={this.updateFoodInfo("saturatedFat")}/>
+                </InputGroup>
+                <InputGroup>
+                    <InputGroupText>Trans Fat</InputGroupText>
+                    <Input placeholder={this.state.data.transFat} onChange={this.updateFoodInfo("transFat")}/>
+                </InputGroup>
+                <InputGroup>
+                    <InputGroupText>Protein</InputGroupText>
+                    <Input placeholder={this.state.data.protein} onChange={this.updateFoodInfo("protein")}/>
+                </InputGroup>
+                <InputGroup>
+                    <InputGroupText>Carbohydrate</InputGroupText>
+                    <Input placeholder={this.state.data.carbohydrate} onChange={this.updateFoodInfo("carbohydrate")}/>
+                </InputGroup>
+            </ModalBody>
+            <ModalFooter>
+                <Button color="primary" onClick={this.saveChanges}>Save</Button>
+                <Button color="secondary" onClick={this.close}>Cancel</Button>
+            </ModalFooter>
 
-        </Modal>
+            </Modal>
         )
     }
 }
 
-export default EditFoodModal;
+export default EditFoodModal

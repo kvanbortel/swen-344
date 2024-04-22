@@ -1,6 +1,6 @@
-import React from 'react';
-import {Component} from 'react';
-import {Modal, ModalHeader, ModalBody, ModalFooter, Button, Card, ListGroup, ListGroupItem} from 'reactstrap';
+import React from 'react'
+import {Component} from 'react'
+import {Modal, ModalHeader, ModalBody, ModalFooter, Button, Card, ListGroup, ListGroupItem} from 'reactstrap'
 
 const dailyMaximums = {calories: 2000, totalFat: 67, saturatedFat: 20, transFat: 2.2, protein: 175, carbohydrate: 275}
 
@@ -8,7 +8,7 @@ class NutrientsModal extends Component
 {
     close = () =>
     {
-        this.props.cancel();
+        this.props.cancel()
     }
 
     getColor=(name)=>
@@ -24,7 +24,7 @@ class NutrientsModal extends Component
     {
         const data = this.props.data ?? Object.fromEntries(Object.keys(dailyMaximums).map(name => [name, 0]))
 
-        return(
+        return (
             <Modal isOpen={this.props.showHide} toggle={this.close}>
             <ModalHeader toggle={this.close}>{data.name ?? ""}</ModalHeader>
             <ModalBody>
@@ -47,4 +47,4 @@ class NutrientsModal extends Component
     }
 }
 
-export default NutrientsModal;
+export default NutrientsModal
