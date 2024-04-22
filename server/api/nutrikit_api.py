@@ -53,6 +53,12 @@ class Foods(Resource):
         result = exec_commit(sql, (args['category_id'], args['calories'], args['totalFat'], args['saturatedFat'],
                                    args['transFat'], args['protein'], args['carbohydrate'], args['id']))
         return result
+    
+    def delete(self):
+        id = request.args['id']
+        exec_commit("""
+            DELETE FROM foods WHERE id=%s
+        """, (id,))
 
 
 class Categories(Resource):

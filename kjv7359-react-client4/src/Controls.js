@@ -4,6 +4,7 @@ import NutrientsModal from '../../kjv7359-react-client4/src/NutrientsModal'
 import {Container, Row, Col, DropdownMenu, DropdownItem, DropdownToggle, Dropdown, Input, Card, CardHeader,
         ButtonGroup, Button, Progress, InputGroup, InputGroupText} from "reactstrap"
 import EditFoodModal from '../../kjv7359-react-client4/src/EditFoodModal'
+import DeleteModal from './DeleteModal'
 
 class Controls extends Component
 {
@@ -11,14 +12,15 @@ class Controls extends Component
         super(props)
         this.nutrientNames = ["calories", "totalFat", "saturatedFat", "transFat", "protein", "carbohydrate"]
         this.state = {
-            groupSelection: "",
+            groupSelection: null,
             menuItems: [],
-            selectedMenuItem: "",
+            selectedMenuItem: null,
             foodItems: [],
             foodSelection: "",
             dropdownOpen: false,
             calorieGoal: 2000,
             showEditModal: false,
+            showDeleteModal: false,
             showTotModal: false,
             showSingleModal: false,
             showAddModal: false,
@@ -33,7 +35,8 @@ class Controls extends Component
 
     updateMenu = (e) =>
     {
-        this.setState({groupSelection: e.target.value})
+        const value = e.target.value
+        this.setState({groupSelection: value === "" ? null : parseInt(value)})
     }
     toggleDropdown = () =>
     {
@@ -42,7 +45,8 @@ class Controls extends Component
 
     updateMenuSelection = (e) =>
     {
-        this.setState({selectedMenuItem: e.target.value})
+        const value = e.target.value
+        this.setState({selectedMenuItem: value === "" ? null : parseInt(value)})
     }
     updateFoodSelection = (e) =>
     {
@@ -56,9 +60,8 @@ class Controls extends Component
         // this would work better with getElementByID since ReactStrap doesn't fire onChange
         // when the contents change the selection, but I was advised to put it back without default selection
         let menuSelection = this.state.selectedMenuItem
-        if (menuSelection === "")
+        if (menuSelection === null)
             return
-        menuSelection = parseInt(menuSelection)
         foodItems.push({key: this.nextFoodItemIndex.toString(), id: menuSelection})
         this.nextFoodItemIndex += 1
 
@@ -108,6 +111,11 @@ class Controls extends Component
         this.setState({calorieGoal: e.target.value})
     }
 
+    showDeleteItemModal = (show) =>
+    {
+        return () => this.setState({showDeleteModal: show})
+    }
+
     showEditItemModal = (show) =>
     {
         return () => this.setState({showEditModal: show})
@@ -133,11 +141,7 @@ class Controls extends Component
         // this would work better with getElementByID since ReactStrap doesn't fire onChange
         // when the contents change the selection, but I was advised to put it back without default selection
         const menuSelection = this.state.selectedMenuItem
-        if (menuSelection === "")
-        {
-            return null
-        }
-        return this.getFoodById(parseInt(menuSelection))
+        return menuSelection === null ? null : this.getFoodById(menuSelection)
     }
 
     updateFoodInfo = (data, isEdit) =>
@@ -166,13 +170,28 @@ class Controls extends Component
         }
         else
         {
-            data.category_id = parseInt(this.state.groupSelection)
+            data.category_id = this.state.groupSelection
             this.props.addFood(data)
         }
 
         return true
     }
 
+    deleteCleanup = (newFoods) =>
+    {
+        const newIds = new Set(newFoods.map(food => food.id))
+        const foodItems = this.state.foodItems.filter(item => newIds.has(item.id))
+        const firstMenuMatch = newFoods.find(
+            food => food.category_id === this.state.groupSelection)
+        const newMenuSelection = firstMenuMatch === undefined ? null : firstMenuMatch.id
+        const newFoodSelection = foodItems.length === 0 ? "" : foodItems[0].key
+        this.setState({selectedMenuItem: newMenuSelection, newFoodSelection: newFoodSelection, foodItems: foodItems})
+    }
+
+    deleteItem = () =>
+    {
+        this.props.deleteFood(this.state.selectedMenuItem, this.deleteCleanup)
+    }
 
     processCategories = () =>
     {
@@ -195,11 +214,11 @@ class Controls extends Component
             console.log("Empty content")
             return (<option key="">No content</option>)
         }
-        if (this.state.groupSelection === "")
+        if (this.state.groupSelection === null)
         {
             return null
         }
-        const category_id = parseInt(this.state.groupSelection)
+        const category_id = this.state.groupSelection
         return(
             this.props.foods.filter(food => food.category_id === category_id).map(food =>
                 <option value={food.id} key={food.id}>{food.name}</option>
@@ -227,17 +246,19 @@ class Controls extends Component
                 <Col xs="12" md="5" lg="3" className="ptb">
                     <Card>
                         <CardHeader><h4 className="text-center">Menu Items</h4></CardHeader>
-                        <Input type="select" id="menuItems" size="5" value={this.state.selectedMenuItem}
+                        <Input type="select" id="menuItems" size="5" value={this.state.selectedMenuItem ?? ""}
                                 onChange={this.updateMenuSelection}>
                             {this.processFoods()}
                         </Input>
                         <ButtonGroup>
-                            <Button disabled={this.state.selectedMenuItem === ""} color="info"
-                                onClick={this.showSingleItemModal(true)}>View Item</Button>
-                            <Button disabled={this.state.selectedMenuItem === ""} color="primary"
-                                onClick={this.showAddItemModal(true)}>Add Item</Button>
-                            <Button disabled={this.state.selectedMenuItem === ""} color="secondary"
-                                onClick={this.showEditItemModal(true)}>Edit Item</Button>
+                            <Button disabled={this.state.selectedMenuItem === null} color="info"
+                                onClick={this.showSingleItemModal(true)}>View</Button>
+                            <Button disabled={this.state.selectedMenuItem === null} color="primary"
+                                onClick={this.showAddItemModal(true)}>Add</Button>
+                            <Button disabled={this.state.selectedMenuItem === null} color="secondary"
+                                onClick={this.showEditItemModal(true)}>Edit</Button>
+                            <Button disabled={this.state.selectedMenuItem === null} color="danger"
+                                onClick={this.showDeleteItemModal(true)}>Delete</Button>
                         </ButtonGroup>
                         <NutrientsModal cancel={this.showSingleItemModal(false)} showHide={this.state.showSingleModal}
                             data={this.getSingleNutrients()}></NutrientsModal>
@@ -245,6 +266,10 @@ class Controls extends Component
                             showHide={this.state.showAddModal}></EditFoodModal>
                         <EditFoodModal callback={this.updateFoodInfo} cancel={this.showEditItemModal(false)}
                             showHide={this.state.showEditModal} data={this.getSingleNutrients()}></EditFoodModal>
+                        <DeleteModal callback={this.deleteItem} cancel={this.showDeleteItemModal(false)}
+                            showHide={this.state.showDeleteModal}
+                            name={this.state.selectedMenuItem ?
+                                this.getFoodById(this.state.selectedMenuItem).name : ""}></DeleteModal>
                     </Card>
                 </Col>
                 <Col xs="12" md="2" lg="2" className="ptb">

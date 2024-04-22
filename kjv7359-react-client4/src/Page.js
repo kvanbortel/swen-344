@@ -27,10 +27,13 @@ class Page extends Component
         })
     }
 
-    fetchFoods = () => {
-        let url = baseURL + '/foods'
-        const promise = fetch(url)
-        this.handleResponse(promise, apiResponse => this.setState({foods: apiResponse}))
+    fetchFoods = (args) => {
+        const promise = fetch(baseURL + '/foods')
+        this.handleResponse(promise, apiResponse => {
+            if ('deleteCleanup' in args)
+                args.deleteCleanup(apiResponse)
+            this.setState({foods: apiResponse})
+        })
     }
 
     addFood = (params) => // name, category_id, calories, totalFat, saturatedFat, transFat, protein, carbohydrate
@@ -41,7 +44,7 @@ class Page extends Component
                 body: JSON.stringify(params),
                 headers: {"Content-type": "application/json; charset=UTF-8"}
             })
-        this.handleResponse(promise, response => this.fetchFoods())
+        this.handleResponse(promise, response => this.fetchFoods({}))
     }
 
     editFood = (params) => // id, category_id, calories, totalFat, saturatedFat, transFat, protein, carbohydrate
@@ -52,12 +55,20 @@ class Page extends Component
                 body: JSON.stringify(params),
                 headers: {"Content-type": "application/json; charset=UTF-8"}
             })
-        this.handleResponse(promise, response => this.fetchFoods())
+        this.handleResponse(promise, response => this.fetchFoods({}))
+    }
+
+    deleteFood = (id, deleteCleanup) =>
+    {
+        const promise = fetch(baseURL + '/foods?id=' + encodeURI(id),
+            {
+                method: 'DELETE',
+            })
+        this.handleResponse(promise, response => this.fetchFoods({deleteCleanup: deleteCleanup}))
     }
 
     fetchCategories = () => {
-        let url = baseURL + '/categories'
-        const promise = fetch(url)
+        const promise = fetch(baseURL + '/categories')
         this.handleResponse(promise, apiResponse => {
             this.setState({categories: apiResponse})
         })
@@ -65,7 +76,7 @@ class Page extends Component
 
     componentDidMount()
     {
-        this.fetchFoods()
+        this.fetchFoods({})
         this.fetchCategories()
     }
 
@@ -76,7 +87,7 @@ class Page extends Component
                 <Headings />
                 <Controls categories={this.state.categories}
                           foods={this.state.foods}
-                          addFood={this.addFood} editFood={this.editFood}
+                          addFood={this.addFood} editFood={this.editFood} deleteFood={this.deleteFood}
                 />
             </div>
         )
