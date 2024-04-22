@@ -33,47 +33,23 @@ class Page extends Component
         this.handleResponse(promise, apiResponse => this.setState({foods: apiResponse}))
     }
 
-    // TODO: make category_id work
-    addFood = (name, category_id, calories, totalFat, saturatedFat, transFat, protein, carbohydrate)=>
+    addFood = (params)=> // name, category_id, calories, totalFat, saturatedFat, transFat, protein, carbohydrate
     {
-        let url = baseURL + '/foods'
-        let jData = JSON.stringify({
-            name: name,
-            category_id: category_id,
-            calories: calories,
-            totalFat: totalFat,
-            saturatedFat: saturatedFat,
-            transFat: transFat,
-            protein: protein,
-            carbohydrate: carbohydrate,
-            })
-        const promise = fetch(url,
+        const promise = fetch(baseURL + '/foods',
             {
                 method: 'POST',
-                body: jData,
-                headers: {"Content-type": "application/json; charset=UTF-8"}        
+                body: JSON.stringify(params),
+                headers: {"Content-type": "application/json; charset=UTF-8"}
             })
-        this.handleResponse(promise, response => this.fetchFoods({}))
+        this.handleResponse(promise, response => this.fetchFoods())
     }
 
-    editFood = (id, name, category_id, calories, totalFat, saturatedFat, transFat, protein, carbohydrate)=>
+    editFood = (params)=> // id, category_id, calories, totalFat, saturatedFat, transFat, protein, carbohydrate
     {
-        let url = baseURL + '/foods'
-        let jData = JSON.stringify({
-            id: id,
-            name: name,
-            category_id: category_id,
-            calories: calories,
-            totalFat: totalFat,
-            saturatedFat: saturatedFat,
-            transFat: transFat,
-            protein: protein,
-            carbohydrate: carbohydrate,
-        })
-        const promise = fetch(url,
+        const promise = fetch(baseURL + '/foods',
             {
                 method: 'PUT',
-                body: jData,
+                body: JSON.stringify(params),
                 headers: {"Content-type": "application/json; charset=UTF-8"}
             })
         this.handleResponse(promise, response => this.fetchFoods())

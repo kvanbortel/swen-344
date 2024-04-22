@@ -143,18 +143,12 @@ class Controls extends Component
     updateFoodInfo=(data, isEdit)=>
     {
         data = Object.assign({}, data)
-        const name = data.name
-        const foodData = this.state.foodData
 
-        if (name === "")
-        {
+        if (data.name === "")
             return false
-        }
 
-        if (!isEdit && foodData.some(food => food.name === name))
-        {
+        if (!isEdit && this.props.foods.some(food => food.name === data.name))
             return false
-        }
 
         for (const nutrient of this.nutrientNames)
         {
@@ -164,24 +158,18 @@ class Controls extends Component
                 return false
             }
         }
-
-        const newData = {
-            id: isEdit ? data.id : foodData.length,
-            name: name,
-            category: this.state.groupSelection,
-            ...data
-        }
         
         if (isEdit)
         {
-            foodData[data.id] = newData
+            delete data.name
+            this.props.editFood(data)
         }
         else
         {
-            foodData.push(newData)
+            data.category_id = parseInt(this.state.groupSelection)
+            this.props.addFood(data)
         }
-        
-        this.setState({foodData: foodData})
+
         return true
     }
 
