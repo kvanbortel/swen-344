@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Web Assignment 0</title>
+    <meta name="description" content="First web assignment">
+    <meta name="author" content="Kayla Van Bortel">
+
+    <script language="javascript" type="text/javascript">
+        function setText()
+        {
+            var foodGroup = document.getElementById("foodGroups");
+            var selectedText = foodGroups.options[foodGroup.selectedIndex].text;
+            document.getElementById("foodType").value = selectedText;
+            var selectedColor = document.querySelector('input[name="colors"]:checked').value;
+            document.getElementById("foodType").style.color = selectedColor;
+        }
+    </script>
+</head>
+<body style='font-family: "Segoe UI"'>
+    <h1 style="font-family:verdana; font-size:36px; font-weight:bold; text-align:center">SWEN-344 Web Assignment 0</h1>
+    <h2 style="font-family:impact; text-align:center">Section 01</h2>
+
+    <label for="foodGroups"></label>
+    <div style="text-align:center">
+    <select name="foodGroups" id="foodGroups" onchange="setText()">
+        <option value="" selected disabled hidden></option>
+        <option value="protein">Protein</option>
+        <option value="carbs">Carbs</option>
+        <option value="fruits">Fruits</option>
+        <option value="vegetables">Vegetables</option>
+        <option value="sweers">Sweets</option>
+    </select>
+    </div>
+
+    <div style="text-align:center">
+        <div style="display:inline-block; text-align:left" onchange="setText()">
+            <input type="radio" id="colors1" name="colors" value="black">
+            <label for="colors1">Black</label><br>
+            <input type="radio" id="colors2" name="colors" value="red">
+            <label for="colors2">Red</label><br>
+            <input type="radio" id="colors3" name="colors" value="green">
+            <label for="colors3">Green</label><br>
+            <input type="radio" id="colors4" name="colors" value="blue">
+            <label for="colors4">Blue</label><br>
+            <input type="radio" id="colors5" name="colors" value="purple">
+            <label for="colors5">Purple</label><br><br>
+        </div>
+    </div>
+
+    <label for="foodType"></label>
+    <div style="text-align:center">
+    <textarea style="resize:none; font-size:25px; font-weight:bold" rows="3" cols="20" name="foodType" id="foodType">Food Type...</textarea>
+    </div>
+
+</body>
+</html>
